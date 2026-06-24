@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Игра на память</title>
+    <style>
+        /* ===== Все стили из style.css ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 40px;
+            padding: 25px 20px 35px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: #f0e9d0;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 60px;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .stats span {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 5px 16px;
+            border-radius: 40px;
+        }
+
+        #moves-counter {
+            background: #fdbb2d;
+            color: #1a1a2e;
+            padding: 5px 18px;
+            border-radius: 40px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin: 20px 0 25px;
+        }
+
+        .card {
+            aspect-ratio: 1 / 1;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #7f5539, 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.15s ease;
+            color: #2d2d2d;
+            transform: scale(1);
+            user-select: none;
+            border: 2px solid #f8f0e3;
+            overflow: hidden;
+        }
+
+        .card:active {
+            transform: scale(0.94);
+            box-shadow: 0 4px 0 #7f5539;
+        }
+
+        .card.matched {
+            background: #2e7d32;
+            box-shadow: 0 6px 0 #1b5e20, 0 8px 16px rgba(0, 0, 0, 0.3);
+            cursor: default;
+            border-color: #a5d6a7;
+            transform: scale(0.97);
+        }
+
+        .card.matched:active {
+            transform: scale(0.97);
+            box-shadow: 0 6px 0 #1b5e20;
+        }
+
+        .card.flipped {
+            background: #fffbe6;
+            box-shadow: 0 6px 0 #b68b6b, 0 8px 16px rgba(0, 0, 0, 0.25);
+            border-color: #ffd966;
+        }
+
+        .card:not(.flipped):not(.matched) .card-content {
+            display: none;
+        }
+
+        .card.flipped .card-content,
+        .card.matched .card-content {
+            display: flex;
+        }
+
+        .card-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-content img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
+
+        /* Стиль для рубашки карты (вопрос) */
+        .card:not(.flipped):not(.matched) .card-back {
+            display: flex;
+        }
+
+        .card-back {
+            display: none;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.4rem;
+            background: linear-gradient(145deg, #4a4a8a, #2a2a5e);
+            border-radius: 18px;
+            color: #fff;
+        }
+
+        .card.flipped .card-back,
+        .card.matched .card-back {
+            display: none;
+        }
+
+        #reset-btn {
+            background: #1a1a2e;
+            border: none;
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 14px 40px;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #0f0f1a, 0 6px 14px rgba(0, 0, 0, 0.3);
+            transition: all 0.12s ease;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        #reset-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #0f0f1a;
+        }
+
+        #reset-btn:hover {
+            background: #2a2a4e;
+            transform: scale(1.02);
+        }
+
+        .message {
+            margin-top: 18px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f9f3d9;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            min-height: 3.2rem;
+        }
+
+        /* Адаптив */
+        @media (max-width: 550px) {
+            .game-container {
+                padding: 16px 12px 24px;
+            }
+            h1 {
+                font-size: 1.9rem;
+            }
+            .grid {
+                gap: 10px;
+            }
+            .card {
+                font-size: 2.4rem;
+                border-radius: 14px;
+            }
+            .card-content img {
+                width: 80%;
+                height: 80%;
+            }
+            .card-back {
+                font-size: 2.6rem;
+            }
+            .stats {
+                font-size: 0.95rem;
+                padding: 8px 14px;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: center;
+            }
+            #reset-btn {
+                font-size: 1rem;
+                padding: 12px 28px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .grid {
+                gap: 6px;
+            }
+            .card {
+                font-size: 1.8rem;
+                border-radius: 10px;
+            }
+            .card-content img {
+                width: 75%;
+                height: 75%;
+            }
+            .card-back {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🧠 ПАМЯТЬ</h1>
+    <div class="subtitle">Найди все пары</div>
+
+    <div class="stats">
+        <span>🏆 Пар: <span id="pairs-matched">0</span>/8</span>
+        <span>🔄 Ходы: <span id="moves-counter">0</span></span>
+    </div>
+
+    <div class="grid" id="game-grid"></div>
+
+    <button id="reset-btn">⟳ Новая игра</button>
+    <div class="message" id="message-area"></div>
+</div>
+
+<script>
+    // ===== Вся логика из script.js =====
+    (function() {
+        // ⚠️ ИЗМЕНЕНИЕ: вместо эмодзи — пути к картинкам
+        const CARD_IMAGES = [
+            'card1.jpg',
+            'card2.jpg',
+            'card3.jpg',
+            'card4.jpg',
+            'card5.jpg',
+            'card6.jpg',
+            'card7.jpg',
+            'card8.jpg'
+        ];
+
+        // Игровые переменные
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let lockBoard = false;
+        let timeoutId = null;
+
+        // DOM-элементы
+        const grid = document.getElementById('game-grid');
+        const pairsSpan = document.getElementById('pairs-matched');
+        const movesSpan = document.getElementById('moves-counter');
+        const messageArea = document.getElementById('message-area');
+
+        // Инициализация
+        function initGame() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+
+            cards = [];
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            lockBoard = false;
+
+            pairsSpan.textContent = '0';
+            movesSpan.textContent = '0';
+            messageArea.textContent = '';
+
+            // Создаём колоду: каждая картинка встречается 2 раза
+            const deck = [...CARD_IMAGES, ...CARD_IMAGES];
+
+            // Перемешиваем
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+
+            cards = deck.map((image, index) => ({
+                id: index,
+                image: image,
+                isFlipped: false,
+                isMatched: false
+            }));
+
+            renderGrid();
+        }
+
+        // Отрисовка карт в сетке
+        function renderGrid() {
+            grid.innerHTML = '';
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                if (card.isFlipped) cardElement.classList.add('flipped');
+                if (card.isMatched) cardElement.classList.add('matched');
+
+                // Контент карты (картинка)
+                const content = document.createElement('div');
+                content.className = 'card-content';
+                const img = document.createElement('img');
+                img.src = card.image;
+                img.alt = 'Card';
+                img.loading = 'lazy';
+                content.appendChild(img);
+                cardElement.appendChild(content);
+
+                // Рубашка карты (вопрос)
+                const back = document.createElement('div');
+                back.className = 'card-back';
+                back.textContent = '❓';
+                cardElement.appendChild(back);
+
+                cardElement.dataset.index = index;
+                cardElement.addEventListener('click', () => onCardClick(index));
+
+                grid.appendChild(cardElement);
+            });
+        }
+
+        // Обновление отображения конкретной карты
+        function updateCardElement(index) {
+            const cardElement = grid.children[index];
+            if (!cardElement) return;
+
+            const card = cards[index];
+            cardElement.classList.toggle('flipped', card.isFlipped);
+            cardElement.classList.toggle('matched', card.isMatched);
+        }
+
+        // Обработчик клика по карте
+        function onCardClick(index) {
+            if (lockBoard) return;
+            const card = cards[index];
+            if (card.isFlipped || card.isMatched) return;
+            if (flippedCards.length >= 2) return;
+
+            card.isFlipped = true;
+            updateCardElement(index);
+            flippedCards.push(index);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                movesSpan.textContent = moves;
+
+                const idx1 = flippedCards[0];
+                const idx2 = flippedCards[1];
+                const card1 = cards[idx1];
+                const card2 = cards[idx2];
+
+                if (card1.image === card2.image) {
+                    // Совпадение!
+                    card1.isMatched = true;
+                    card2.isMatched = true;
+                    card1.isFlipped = false;
+                    card2.isFlipped = false;
+
+                    updateCardElement(idx1);
+                    updateCardElement(idx2);
+
+                    matchedPairs++;
+                    pairsSpan.textContent = matchedPairs;
+                    flippedCards = [];
+
+                    if (matchedPairs === CARD_IMAGES.length) {
+                        messageArea.textContent = '🎉 Поздравляем! Вы выиграли! 🎉';
+                    }
+                } else {
+                    lockBoard = true;
+                    timeoutId = setTimeout(() => {
+                        card1.isFlipped = false;
+                        card2.isFlipped = false;
+                        updateCardElement(idx1);
+                        updateCardElement(idx2);
+
+                        flippedCards = [];
+                        lockBoard = false;
+                        timeoutId = null;
+                    }, 800);
+                }
+            }
+        }
+
+        // Сброс игры
+        function resetGame() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
+            initGame();
+        }
+
+        document.getElementById('reset-btn').addEventListener('click', resetGame);
+        initGame();
+    })();
+</script>
+
+</body>
+</html>
