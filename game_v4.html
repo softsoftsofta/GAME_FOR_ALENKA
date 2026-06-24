@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>День Рождения</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #2c2c2c;
+            font-family: 'Courier New', monospace;
+        }
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        #gameCanvas { display: block; }
+
+        .dialogue {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            border: 4px solid #ffb6c1;
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+            font-size: 16px;
+            color: #5a4a5a;
+            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+            max-width: 700px;
+        }
+        .dialogue.show { display: block; animation: popIn 0.3s ease; }
+
+        .fullscreen-message {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,182,193,0.95);
+            display: none;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 40px;
+            z-index: 200;
+        }
+        .fullscreen-message.show { display: flex; animation: fadeIn 0.5s ease; }
+        .fullscreen-message p { font-size: 28px; color: #5a4a5a; line-height: 1.6; }
+
+        #levelTransition {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; opacity: 0; pointer-events: none;
+            z-index: 300; transition: opacity 0.6s ease;
+        }
+        #levelTransition.fade-out { opacity: 1; pointer-events: all; }
+
+        /* ─── Плашка над персонажем ─── */
+        .speech-bubble {
+            position: absolute;
+            background: #fff;
+            border: 3px solid #5a4a5a;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 14px;
+            color: #3a3a3a;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 160;
+            display: none;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.15);
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px; left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #5a4a5a;
+        }
+        .speech-bubble.show { display: block; animation: bubblePop 0.3s ease; }
+        @keyframes bubblePop {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ─── Большое сердце ─── */
+        #bigHeart {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 160px;
+            z-index: 250;
+            pointer-events: none;
+            display: none;
+            filter: drop-shadow(0 0 20px #ff6b8a);
+        }
+        #bigHeart.show {
+            display: block;
+            animation: heartBoom 2.5s ease forwards;
+        }
+        @keyframes heartBoom {
+            0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+            20%  { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+            40%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+            80%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%,-50%) scale(0.8); opacity: 0; }
+        }
+
+        /* ─── Выбор пиццы ─── */
+        #pizzaChoice {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.97);
+            border: 4px solid #ffcc66;
+            border-radius: 14px;
+            padding: 28px 36px;
+            text-align: center;
+            z-index: 220;
+            display: none;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            animation: popInCenter 0.35s ease;
+        }
+        #pizzaChoice.show { display: block; }
+        #pizzaChoice p {
+            font-size: 20px; color: #5a4a5a; margin-bottom: 20px; line-height: 1.5;
+        }
+        #pizzaChoice .choice-btns { display: flex; gap: 16px; justify-content: center; }
+        #pizzaChoice button {
+            padding: 12px 30px;
+            border: none; border-radius: 8px;
+            font-size: 16px; cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: transform 0.1s, background 0.2s;
+        }
+        #pizzaChoice button:hover { transform: scale(1.05); }
+        #btnEat  { background: #a8e6a3; color: #2a5a2a; }
+        #btnEat:hover  { background: #7dd67a; }
+        #btnSkip { background: #f0c0c0; color: #7a2a2a; }
+        #btnSkip:hover { background: #e8a0a0; }
+
+        /* ─── Экран "питса" ─── */
+        #pizzaFullscreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #fff8dc, #ffe4b5, #ffd700);
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; padding: 50px;
+            z-index: 350;
+        }
+        #pizzaFullscreen.show { display: flex; animation: fadeIn 0.7s ease; }
+        #pizzaFullscreen p {
+            font-size: 24px; color: #5a4a2a; line-height: 1.8; max-width: 600px;
+        }
+        #pizzaFullscreen .pizza-big { font-size: 80px; margin-bottom: 20px; animation: spin 2s linear infinite; }
+        #pizzaFullscreen .hint {
+            margin-top: 30px; font-size: 14px; color: #999;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* ─── Диалог охранника ─── */
+        #guardDialogue {
+            position: absolute;
+            bottom: 60px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.97);
+            border: 4px solid #c0392b;
+            border-radius: 12px;
+            padding: 22px 36px;
+            text-align: center;
+            font-size: 17px;
+            color: #3a2a2a;
+            display: none;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+            z-index: 200;
+            max-width: 560px;
+            line-height: 1.6;
+        }
+        #guardDialogue.show { display: block; animation: slideUp 0.35s ease; }
+        @keyframes slideUp {
+            0% { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        .guard-name {
+            font-size: 13px; color: #c0392b; font-weight: bold;
+            margin-bottom: 8px; letter-spacing: 1px;
+        }
+        #guardBtn {
+            margin-top: 16px; padding: 10px 26px;
+            background: #c0392b; border: none; border-radius: 7px;
+            font-size: 15px; color: #fff; cursor: pointer;
+            font-family: 'Courier New', monospace; transition: background 0.2s;
+        }
+        #guardBtn:hover { background: #a93226; }
+
+        /* ─── Заглушка мини-игры ─── */
+        #miniGamePlaceholder {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            text-align: center; color: #fff;
+            font-family: 'Courier New', monospace;
+            z-index: 350;
+        }
+        #miniGamePlaceholder.show { display: flex; animation: fadeIn 0.5s ease; }
+        #miniGamePlaceholder p { font-size: 22px; margin-bottom: 10px; }
+        #miniGamePlaceholder small { font-size: 14px; color: #aaa; }
+
+        /* ─── Плачущие эмодзи над Мишей ─── */
+        .cry-emoji {
+            position: absolute;
+            font-size: 28px;
+            pointer-events: none;
+            z-index: 155;
+            animation: floatUp 1.4s ease forwards;
+        }
+
+        .instructions {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px;
+            font-size: 12px; color: #5a4a5a; border: 2px solid #ffb6c1; z-index: 50;
+        }
+        .level-label {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255,255,255,0.9); padding: 6px 12px; border-radius: 5px;
+            font-size: 13px; color: #5a4a5a; border: 2px solid #ffb6c1; z-index: 50;
+        }
+
+        @keyframes popIn {
+            0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        @keyframes popInCenter {
+            0% { transform: translate(-50%,-50%) scale(0.8); opacity: 0; }
+            100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn { 0% { opacity:0; } 100% { opacity:1; } }
+        .heart {
+            position: absolute; font-size: 32px;
+            animation: floatUp 1.5s ease forwards; pointer-events: none; z-index: 150;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(0) scale(0); opacity: 0; }
+            50%  { transform: translateY(-30px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1); opacity: 0; }
+        }
+        .seed {
+            position: absolute; font-size: 28px;
+            animation: giveSeed 1s ease forwards; pointer-events: none; z-index: 150;
+        }
+        @keyframes giveSeed {
+            0%   { transform: translate(0,0); opacity: 1; }
+            100% { transform: translate(0,-40px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div id="gameContainer">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div class="instructions">🎮 Стрелочки - движение<br>⏎ ENTER - взаимодействие</div>
+    <div id="levelLabel" class="level-label">🏠 Уровень 1</div>
+    <div id="dialogue" class="dialogue"></div>
+
+    <!-- Уровень 1: записка на компьютере -->
+    <div id="fullscreenMessage" class="fullscreen-message">
+        <p>💌 С днем рождения Аленка!<br><br>
+        <small>Выходи на улицу скорее, у меня для тебя кое-что есть! Миша</small><br><br>
+        <small>Нажмите ESC чтобы закрыть</small></p>
+    </div>
+
+    <!-- Плашки над персонажами -->
+    <div id="mishaBubble" class="speech-bubble"></div>
+    <div id="alenaBubble" class="speech-bubble"></div>
+    <div id="guardBubble" class="speech-bubble" style="border-color:#c0392b; max-width:340px; white-space:normal; text-align:center;"></div>
+
+    <!-- Большое сердце -->
+    <div id="bigHeart">❤️</div>
+
+    <!-- Выбор: скушать / отказаться -->
+    <div id="pizzaChoice">
+        <p>🍕 У Алёнки в руках день-рожденская питса!</p>
+        <div class="choice-btns">
+            <button id="btnEat">🍕 Скушать</button>
+            <button id="btnSkip">🙅 Отказаться</button>
+        </div>
+    </div>
+
+    <!-- Экран после питсы -->
+    <div id="pizzaFullscreen">
+        <div class="pizza-big">🍕</div>
+        <p>Какая вкусная питса!<br>
+        Настолько хороша, что невольно перенесла<br>Алёнку в воспоминания о...</p>
+        <div class="hint">[ ENTER — продолжить ]</div>
+    </div>
+
+    <div id="levelTransition"></div>
+
+    <!-- Диалог охранника -->
+    <div id="guardDialogue">
+        <div class="guard-name">🚨 Охранник</div>
+        <div id="guardText"></div>
+        <button id="guardBtn">Дальше ➜</button>
+    </div>
+
+    <!-- Заглушка мини-игры -->
+    <div id="miniGamePlaceholder">
+        <div style="font-size:40px; margin-bottom:16px;">🎮</div>
+        <p>Место для мини-игры</p>
+        <small>Скрипт будет добавлен позже</small>
+    </div>
+</div>
+
+<script>
+    const canvas  = document.getElementById('gameCanvas');
+    const ctx     = canvas.getContext('2d');
+    const dialogueEl        = document.getElementById('dialogue');
+    const fullscreenMsgEl   = document.getElementById('fullscreenMessage');
+    const levelTransEl      = document.getElementById('levelTransition');
+    const mishaBubbleEl     = document.getElementById('mishaBubble');
+    const alenaBubbleEl     = document.getElementById('alenaBubble');
+    const bigHeartEl        = document.getElementById('bigHeart');
+    const pizzaChoiceEl     = document.getElementById('pizzaChoice');
+    const pizzaFullscreenEl = document.getElementById('pizzaFullscreen');
+    const levelLabelEl      = document.getElementById('levelLabel');
+    const guardDialogueEl   = document.getElementById('guardDialogue');
+    const guardTextEl       = document.getElementById('guardText');
+    const guardBtnEl        = document.getElementById('guardBtn');
+    const miniGameEl        = document.getElementById('miniGamePlaceholder');
+    const guardBubbleEl     = document.getElementById('guardBubble');
+
+    // ─── КАРТИНКИ ───────────────────────────────────────────────────
+    const images = {
+        alena:      new Image(),
+        misha:      new Image(),
+        cat:        new Image(),
+        chinchilla: new Image(),
+        room:       new Image(),
+        street:     new Image(),
+        liceum:     new Image(),
+        guard:      new Image()
+    };
+    images.alena.src      = 'alena.png';
+    images.misha.src      = 'misha.png';
+    images.cat.src        = 'cat.png';
+    images.chinchilla.src = 'chinchilla.png';
+    images.room.src       = 'room.png';
+    images.street.src     = 'street.jpg';
+    images.liceum.src     = 'liceum1.jpg';
+    images.guard.src      = 'guard.png';
+
+    // ─── СОСТОЯНИЕ ──────────────────────────────────────────────────
+    let currentLevel = 1;
+    let player = { x: 400, y: 350, width: 70, height: 120, speed: 4 };
+    let keys = {};
+    let inputBlocked = false;
+    let currentDialogue = null;
+
+    let tasksCompleted = { cat: false, chinchilla: false, computer: false };
+
+    // Уровень 2: состояние диалога с Мишей
+    // Шаги: 0=ничего, 1=плашка "Ура!", 2=сердце, 3=плашка "питса!", 4=выбор, 5=готово
+    let mishaStep = 0;
+    let alenHasPizza = false;   // рисовать пиццу в руках у Алёнки
+    let pizzaScreenReady = false; // ждём ENTER на экране питсы
+
+    // ─── ЗОНЫ ───────────────────────────────────────────────────────
+    const zonesL1 = {
+        cat:        { x: 560, y: 320, width: 60, height: 50 },
+        chinchilla: { x:  80, y: 360, width: 50, height: 60 },
+        computer:   { x: 200, y: 320, width: 60, height: 40 },
+        door:       { x: 590, y: 350, width: 60, height: 40 }
+    };
+    const posL1 = {
+        cat:        { x: 570, y: 300 },
+        chinchilla: { x:  85, y: 300 }
+    };
+
+    const mishaPos   = { x: 490, y: 390 };
+    const zoneMisha  = { x: 450, y: 380, width: 100, height: 70 };
+
+    // ─── УРОВЕНЬ 3 — ЛИЦЕЙ ──────────────────────────────────────────
+    const guardPos  = { x: 370, y: 390 };   // центр, потом поменяешь
+    const zoneGuard = { x: 330, y: 380, width: 100, height: 70 };
+    const walkL3    = [{ x: 0, y: 430, width: 800, height: 170 }];
+
+    // guardStep:
+    //  0 = не начат
+    //  1..3 = злые реплики (плашка над охранником)
+    //  4 = предложение сыграть (плашка)
+    //  5 = мини-игра запущена
+    let guardStep = 0;
+
+    // Злые реплики — показываем плашками над охранником по очереди
+    const guardAngryLines = [
+        'Почему без пропуска?? 😠',
+        'Как есть пропуск?? Зачем тогда меня тревожишь?!',
+        'Не видишь — я занята важным делом!! 😤',
+    ];
+    const guardGameLine = 'Ладно... хочешь пройти — сыграй со мной! 🎮';
+
+    let guardBubbleIndex = 0;
+    let guardBubbleTimer = null;
+
+    const walkL1 = [{ x: -4,  y: 430, width: 730, height: 170 }];
+    const walkL2 = [{ x:  0,  y: 430, width: 800, height: 170 }];
+
+    // ─── УТИЛИТЫ ────────────────────────────────────────────────────
+    function hit(a, b) {
+        return a.x < b.x+b.width && a.x+a.width > b.x &&
+               a.y < b.y+b.height && a.y+a.height > b.y;
+    }
+    function canWalk(x, y, zones) {
+        for (let z of zones)
+            if (x>=z.x && x<=z.x+z.width && y>=z.y && y<=z.y+z.height) return true;
+        return false;
+    }
+    function imgOk(img) { return img.complete && img.naturalWidth !== 0; }
+
+    // ─── ПЛАШКА НАД ПЕРСОНАЖЕМ ──────────────────────────────────────
+    function showBubble(el, text, charX, charY, charW) {
+        el.textContent = text;
+        el.classList.add('show');
+        // позиционируем по центру персонажа, чуть выше
+        requestAnimationFrame(() => {
+            const bw = el.offsetWidth;
+            const bh = el.offsetHeight;
+            el.style.left = (charX + charW/2 - bw/2) + 'px';
+            el.style.top  = (charY - bh - 14) + 'px';
+        });
+    }
+    function hideBubble(el) { el.classList.remove('show'); }
+
+    // ─── РИСОВАНИЕ ──────────────────────────────────────────────────
+    function drawLevel1() {
+        if (imgOk(images.room)) ctx.drawImage(images.room, 0, 0, 800, 600);
+        else { ctx.fillStyle='#ffe4ec'; ctx.fillRect(0,0,800,600); }
+        if (imgOk(images.cat)) ctx.drawImage(images.cat, posL1.cat.x, posL1.cat.y, 50, 50);
+        else { ctx.fillStyle='#ffa500'; ctx.fillRect(posL1.cat.x, posL1.cat.y, 50, 50); }
+        if (imgOk(images.chinchilla)) ctx.drawImage(images.chinchilla, posL1.chinchilla.x, posL1.chinchilla.y, 45, 45);
+        else { ctx.fillStyle='#808080'; ctx.fillRect(posL1.chinchilla.x, posL1.chinchilla.y, 45, 45); }
+    }
+
+    function drawLevel2() {
+        if (imgOk(images.street)) ctx.drawImage(images.street, 0, 0, 800, 600);
+        else { ctx.fillStyle='#c8b89a'; ctx.fillRect(0,0,800,600); }
+        if (imgOk(images.misha)) ctx.drawImage(images.misha, mishaPos.x, mishaPos.y, 65, 110);
+        else { ctx.fillStyle='#6a8a9a'; ctx.fillRect(mishaPos.x, mishaPos.y, 65, 110); }
+    }
+
+    function drawLevel3() {
+        if (imgOk(images.liceum)) ctx.drawImage(images.liceum, 0, 0, 800, 600);
+        else { ctx.fillStyle='#e8e0d0'; ctx.fillRect(0,0,800,600); }
+        // Охранник
+        if (imgOk(images.guard)) {
+            ctx.drawImage(images.guard, guardPos.x, guardPos.y, 60, 110);
+        } else {
+            // Запасной рисунок охранника
+            ctx.fillStyle='#2c3e50'; ctx.fillRect(guardPos.x, guardPos.y, 55, 100);
+            ctx.fillStyle='#e8b4a0'; ctx.fillRect(guardPos.x+10, guardPos.y, 35, 35);
+            ctx.font='20px serif'; ctx.textAlign='center';
+            ctx.fillText('🚨', guardPos.x+27, guardPos.y-8);
+            ctx.textAlign='left';
+        }
+    }
+
+    function drawPlayer() {
+        if (imgOk(images.alena)) ctx.drawImage(images.alena, player.x, player.y, player.width, player.height);
+        else { ctx.fillStyle='#ffb6c1'; ctx.fillRect(player.x, player.y, player.width, player.height); }
+
+        // Пицца в руках
+        if (alenHasPizza) {
+            ctx.font = '28px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🍕', player.x + player.width + 8, player.y + player.height * 0.65);
+            ctx.textAlign = 'left';
+        }
+    }
+
+    // ─── АНИМАЦИИ КОРМЁЖКИ (уровень 1) ─────────────────────────────
+    function spawnFloating(emoji, left, top, cls) {
+        const el = document.createElement('div');
+        el.className = cls; el.textContent = emoji;
+        el.style.left = left; el.style.top = top;
+        document.getElementById('gameContainer').appendChild(el);
+        setTimeout(() => el.remove(), 1600);
+    }
+    function animateCatFeed() {
+        inputBlocked = true;
+        for (let i=0;i<3;i++) setTimeout(()=>spawnFloating('🍗','590px','340px','seed'), i*200);
+        setTimeout(()=>{ for(let i=0;i<5;i++) setTimeout(()=>spawnFloating('❤️',(560+Math.random()*60)+'px','320px','heart'),i*200); },800);
+        tasksCompleted.cat = true;
+        setTimeout(()=>{ inputBlocked=false; },2000);
+    }
+    function animateChinchillaFeed() {
+        inputBlocked = true;
+        for (let i=0;i<3;i++) setTimeout(()=>spawnFloating('🌻','105px','380px','seed'), i*200);
+        setTimeout(()=>{ for(let i=0;i<5;i++) setTimeout(()=>spawnFloating('💕',(80+Math.random()*50)+'px','350px','heart'),i*200); },800);
+        tasksCompleted.chinchilla = true;
+        setTimeout(()=>{ inputBlocked=false; },2000);
+    }
+
+    // ─── ПЕРЕХОД ────────────────────────────────────────────────────
+    function doTransition(callback) {
+        inputBlocked = true;
+        levelTransEl.classList.add('fade-out');
+        setTimeout(()=>{ callback(); levelTransEl.classList.remove('fade-out'); setTimeout(()=>{ inputBlocked=false; },100); }, 700);
+    }
+
+    // ─── ЛОГИКА ДИАЛОГА С МИШЕЙ (уровень 2) ─────────────────────────
+    //
+    // mishaStep:
+    //   0 — подойди (показываем подсказку в dialogue)
+    //   1 — плашка "Ура! С днём рождения!!" → ENTER → большое сердце
+    //   2 — (сердце играет) → после него плашка "питса!"
+    //   3 — плашка "питса!" → ENTER → пицца в руках + выбор
+    //   4 — экран выбора активен
+    //   5 — скушали → экран питсы
+    //   6 — ждём ENTER на экране питсы → переход на уровень 3
+
+    function mishaInteract() {
+        if (mishaStep === 0) {
+            // Показываем плашку над Мишей
+            mishaStep = 1;
+            inputBlocked = true;
+            showBubble(mishaBubbleEl, 'Ура, Алёнка, с днём рождения тебя!! 🎉', mishaPos.x, mishaPos.y, 65);
+            dialogueEl.classList.remove('show');
+            // Показываем подсказку снизу
+            setTimeout(()=>{
+                dialogueEl.textContent = '[ ENTER — продолжить ]';
+                dialogueEl.classList.add('show');
+                inputBlocked = false;
+            }, 400);
+        }
+    }
+
+    function mishaEnterPressed() {
+        if (mishaStep === 1) {
+            // Прячем плашку, показываем большое сердце
+            mishaStep = 2;
+            inputBlocked = true;
+            hideBubble(mishaBubbleEl);
+            dialogueEl.classList.remove('show');
+            bigHeartEl.classList.remove('show');
+            void bigHeartEl.offsetWidth; // reflow
+            bigHeartEl.classList.add('show');
+
+            // После сердца — плашка о питсе
+            setTimeout(()=>{
+                bigHeartEl.classList.remove('show');
+                mishaStep = 3;
+                showBubble(mishaBubbleEl, 'Я приготовил тебе день-рожденскую питсу! 🍕', mishaPos.x, mishaPos.y, 65);
+                dialogueEl.textContent = '[ ENTER — продолжить ]';
+                dialogueEl.classList.add('show');
+                inputBlocked = false;
+            }, 2600);
+            return;
+        }
+
+        if (mishaStep === 3) {
+            // Даём пиццу, показываем выбор
+            mishaStep = 4;
+            inputBlocked = true;
+            hideBubble(mishaBubbleEl);
+            dialogueEl.classList.remove('show');
+            alenHasPizza = true;
+            // Маленькая задержка для эффекта "взяла"
+            setTimeout(()=>{
+                pizzaChoiceEl.classList.add('show');
+                // inputBlocked остаётся true, клики обрабатываются кнопками
+            }, 400);
+            return;
+        }
+
+        if (mishaStep === 6) {
+            // Переход на уровень 3
+            pizzaFullscreenEl.classList.remove('show');
+            doTransition(()=>{
+                currentLevel = 3;
+                levelLabelEl.textContent = '🌅 Уровень 3';
+                player.x = 100; player.y = 450;
+                mishaStep = 99;
+                // TODO: здесь будет локация уровня 3
+            });
+        }
+    }
+
+    // Кнопка "Скушать"
+    document.getElementById('btnEat').addEventListener('click', ()=>{
+        pizzaChoiceEl.classList.remove('show');
+        mishaStep = 5;
+        alenHasPizza = false;
+
+        // Анимация поедания — летящие кусочки
+        for (let i=0;i<6;i++) {
+            setTimeout(()=> spawnFloating(
+                ['🍕','✨','😋','💛'][Math.floor(Math.random()*4)],
+                (player.x + Math.random()*80) + 'px',
+                (player.y + Math.random()*60 + 30) + 'px',
+                'heart'
+            ), i*150);
+        }
+
+        setTimeout(()=>{
+            mishaStep = 6;
+            pizzaFullscreenEl.classList.add('show');
+            inputBlocked = false;
+            // обновляем подсказку
+            // (экран сам содержит hint)
+        }, 800);
+    });
+
+    // Кнопка "Отказаться"
+    document.getElementById('btnSkip').addEventListener('click', ()=>{
+        pizzaChoiceEl.classList.remove('show');
+        // Плачущие эмодзи над Мишей
+        for (let i=0;i<5;i++) {
+            setTimeout(()=>{
+                const el = document.createElement('div');
+                el.className = 'cry-emoji';
+                el.textContent = ['😢','😭','💔'][Math.floor(Math.random()*3)];
+                el.style.left = (mishaPos.x + Math.random()*65) + 'px';
+                el.style.top  = (mishaPos.y - 10) + 'px';
+                document.getElementById('gameContainer').appendChild(el);
+                setTimeout(()=>el.remove(), 1500);
+            }, i*200);
+        }
+        // Через секунду снова показываем выбор
+        setTimeout(()=>{
+            pizzaChoiceEl.classList.add('show');
+        }, 1800);
+    });
+
+    // ─── ЛОГИКА ОХРАННИКА (уровень 3) ───────────────────────────────
+    //
+    // При первом ENTER: злые плашки над охранником по очереди (авто, 1.8с каждая),
+    // затем плашка с предложением сыграть + кнопка «Сыграть!» в диалоге снизу.
+
+    function guardInteract() {
+        if (guardStep !== 0) return;
+        guardStep = 1;
+        inputBlocked = true;
+        dialogueEl.classList.remove('show');
+        guardBubbleIndex = 0;
+        showNextAngryBubble();
+    }
+
+    function showNextAngryBubble() {
+        if (guardBubbleIndex < guardAngryLines.length) {
+            showBubble(guardBubbleEl, guardAngryLines[guardBubbleIndex],
+                       guardPos.x, guardPos.y, 60);
+            guardBubbleIndex++;
+            guardBubbleTimer = setTimeout(() => {
+                hideBubble(guardBubbleEl);
+                setTimeout(showNextAngryBubble, 300);
+            }, 1900);
+        } else {
+            // Все злые реплики прошли — финальная плашка "сыграй"
+            guardStep = 4;
+            showBubble(guardBubbleEl, guardGameLine, guardPos.x, guardPos.y, 60);
+            setTimeout(() => {
+                // Показываем кнопку в нижнем диалоге
+                guardTextEl.textContent = '...Ладно. Хочешь пройти — сыграй со мной! 🎮';
+                guardBtnEl.textContent  = 'Сыграть! 🎮';
+                guardDialogueEl.classList.add('show');
+                inputBlocked = false;
+            }, 600);
+        }
+    }
+
+    guardBtnEl.addEventListener('click', () => {
+        if (guardStep === 4) {
+            guardDialogueEl.classList.remove('show');
+            hideBubble(guardBubbleEl);
+            guardStep = 5;
+            inputBlocked = true;
+            miniGameEl.classList.add('show');
+            // ← сюда позже вставим скрипт мини-игры
+        }
+    });
+
+    function updateDialogueL3() {
+        // Пока идут плашки или мини-игра — нижний диалог не трогаем
+        if (guardStep > 0) {
+            if (guardStep === 0) { dialogueEl.classList.remove('show'); currentDialogue = null; }
+            return;
+        }
+        if (hit(player, zoneGuard)) {
+            dialogueEl.textContent = '🚨 Подойти к охраннику (ENTER)';
+            dialogueEl.classList.add('show');
+            currentDialogue = 'guard';
+        } else {
+            dialogueEl.classList.remove('show');
+            currentDialogue = null;
+        }
+    }
+
+    // ─── ДИАЛОГ ПОДСКАЗКИ (уровень 2) ───────────────────────────────
+    function updateDialogueL2() {
+        if (inputBlocked || mishaStep >= 1) return;
+        if (hit(player, zoneMisha)) {
+            dialogueEl.textContent = '💬 Подойти к Мише (ENTER)';
+            dialogueEl.classList.add('show');
+            currentDialogue = 'misha';
+        } else {
+            dialogueEl.classList.remove('show');
+            currentDialogue = null;
+        }
+    }
+
+    // ─── ДИАЛОГ ПОДСКАЗКИ (уровень 1) ───────────────────────────────
+    function updateDialogueL1() {
+        if (inputBlocked) { dialogueEl.classList.remove('show'); currentDialogue=null; return; }
+        let near = null;
+        for (let name in zonesL1) if (hit(player, zonesL1[name])) { near=name; break; }
+
+        if (near==='door') {
+            dialogueEl.textContent = tasksCompleted.cat && tasksCompleted.chinchilla
+                ? '🚪 Выйти из дома (ENTER)'
+                : '🚪 Нужно сначала покормить всех животных!';
+            dialogueEl.classList.add('show'); currentDialogue='door';
+        } else if (near==='cat' && !tasksCompleted.cat) {
+            dialogueEl.textContent='🐱 Покормить Роксану (ENTER)';
+            dialogueEl.classList.add('show'); currentDialogue='cat';
+        } else if (near==='chinchilla' && !tasksCompleted.chinchilla) {
+            dialogueEl.textContent='🐹 Покормить Шлёпокрысу (ENTER)';
+            dialogueEl.classList.add('show'); currentDialogue='chinchilla';
+        } else if (near==='computer' && !tasksCompleted.computer) {
+            dialogueEl.textContent='💻 Проверить сообщения (ENTER)';
+            dialogueEl.classList.add('show'); currentDialogue='computer';
+        } else {
+            dialogueEl.classList.remove('show'); currentDialogue=null;
+        }
+    }
+
+    // ─── ВВОД ────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+        keys[e.key] = true;
+
+        if (e.key==='Escape') {
+            if (fullscreenMsgEl.classList.contains('show')) fullscreenMsgEl.classList.remove('show');
+            return;
+        }
+
+        if (e.key==='Enter') {
+            // Экран питсы
+            if (mishaStep===6 && pizzaFullscreenEl.classList.contains('show')) {
+                mishaEnterPressed();
+                return;
+            }
+            if (inputBlocked) return;
+
+            if (currentLevel===1) {
+                if      (currentDialogue==='cat'        && !tasksCompleted.cat)        animateCatFeed();
+                else if (currentDialogue==='chinchilla' && !tasksCompleted.chinchilla) animateChinchillaFeed();
+                else if (currentDialogue==='computer'   && !tasksCompleted.computer) {
+                    fullscreenMsgEl.classList.add('show');
+                    tasksCompleted.computer = true;
+                }
+                else if (currentDialogue==='door' && tasksCompleted.cat && tasksCompleted.chinchilla) {
+                    doTransition(()=>{
+                        currentLevel=2;
+                        levelLabelEl.textContent='🌆 Уровень 2';
+                        player.x=50; player.y=450;
+                    });
+                }
+            } else if (currentLevel===2) {
+                if (mishaStep===0 && currentDialogue==='misha') {
+                    mishaInteract();
+                } else if (mishaStep===1 || mishaStep===3) {
+                    mishaEnterPressed();
+                }
+            } else if (currentLevel===3) {
+                if (currentDialogue==='guard' && guardStep===0) {
+                    guardInteract();
+                }
+                // TODO: ENTER внутри мини-игры будет обрабатываться самой игрой
+            }
+        }
+    });
+    document.addEventListener('keyup', e => { keys[e.key]=false; });
+
+    // ─── ИГРОВОЙ ЦИКЛ ────────────────────────────────────────────────
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if      (currentLevel===1) drawLevel1();
+        else if (currentLevel===2) drawLevel2();
+        else if (currentLevel===3) drawLevel3();
+
+        // Движение (блокируем если inputBlocked ИЛИ активен выбор)
+        const anyOverlay = pizzaChoiceEl.classList.contains('show') ||
+                           pizzaFullscreenEl.classList.contains('show') ||
+                           fullscreenMsgEl.classList.contains('show') ||
+                           miniGameEl.classList.contains('show');
+
+        if (!inputBlocked && !anyOverlay) {
+            let nx = player.x, ny = player.y;
+            if (keys['ArrowUp'])    ny -= player.speed;
+            if (keys['ArrowDown'])  ny += player.speed;
+            if (keys['ArrowLeft'])  nx -= player.speed;
+            if (keys['ArrowRight']) nx += player.speed;
+
+            const wz = currentLevel===1 ? walkL1 : currentLevel===2 ? walkL2 : walkL3;
+            const lx = nx+10, rx = nx+player.width-10, fy = ny+player.height-5;
+            if (canWalk(lx,fy,wz) && canWalk(rx,fy,wz)) { player.x=nx; player.y=ny; }
+        }
+
+        drawPlayer();
+
+        // Обновляем позицию плашек каждый кадр (персонажи могут двигаться)
+        if (currentLevel===2) {
+            if (mishaBubbleEl.classList.contains('show')) {
+                const bw = mishaBubbleEl.offsetWidth;
+                const bh = mishaBubbleEl.offsetHeight;
+                mishaBubbleEl.style.left = (mishaPos.x + 32 - bw/2) + 'px';
+                mishaBubbleEl.style.top  = (mishaPos.y - bh - 14) + 'px';
+            }
+            updateDialogueL2();
+        } else if (currentLevel===1) {
+            updateDialogueL1();
+        } else if (currentLevel===3) {
+            if (guardBubbleEl.classList.contains('show')) {
+                const bw = guardBubbleEl.offsetWidth;
+                const bh = guardBubbleEl.offsetHeight;
+                guardBubbleEl.style.left = (guardPos.x + 30 - bw/2) + 'px';
+                guardBubbleEl.style.top  = (guardPos.y - bh - 14) + 'px';
+            }
+            updateDialogueL3();
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+</script>
+</body>
+</html>
