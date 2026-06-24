@@ -62,7 +62,6 @@
         }
         #levelTransition.fade-out { opacity: 1; pointer-events: all; }
 
-        /* ─── Плашка над персонажем ─── */
         .speech-bubble {
             position: absolute;
             background: #fff;
@@ -91,7 +90,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* ─── Большое сердце ─── */
         #bigHeart {
             position: absolute;
             top: 50%; left: 50%;
@@ -114,7 +112,6 @@
             100% { transform: translate(-50%,-50%) scale(0.8); opacity: 0; }
         }
 
-        /* ─── Выбор пиццы ─── */
         #pizzaChoice {
             position: absolute;
             top: 50%; left: 50%;
@@ -147,7 +144,6 @@
         #btnSkip { background: #f0c0c0; color: #7a2a2a; }
         #btnSkip:hover { background: #e8a0a0; }
 
-        /* ─── Экран "питса" ─── */
         #pizzaFullscreen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #fff8dc, #ffe4b5, #ffd700);
@@ -168,13 +164,11 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        /* ─── Диалог охранника ─── */
-        #guardDialogue {
+        #guardDialogue, #varyaDialogue, #varyaLoseDialogue, #varyaWinDialogue {
             position: absolute;
             bottom: 60px; left: 50%;
             transform: translateX(-50%);
             background: rgba(255,255,255,0.97);
-            border: 4px solid #c0392b;
             border-radius: 12px;
             padding: 22px 36px;
             text-align: center;
@@ -186,38 +180,61 @@
             max-width: 560px;
             line-height: 1.6;
         }
-        #guardDialogue.show { display: block; animation: slideUp 0.35s ease; }
+        #guardDialogue.show, #varyaDialogue.show, #varyaLoseDialogue.show, #varyaWinDialogue.show {
+            display: block; animation: slideUp 0.35s ease;
+        }
         @keyframes slideUp {
             0% { transform: translateX(-50%) translateY(20px); opacity: 0; }
             100% { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
-        .guard-name {
-            font-size: 13px; color: #c0392b; font-weight: bold;
-            margin-bottom: 8px; letter-spacing: 1px;
-        }
-        #guardBtn {
+        #guardDialogue { border: 4px solid #c0392b; }
+        #varyaDialogue, #varyaLoseDialogue, #varyaWinDialogue { border: 4px solid #9b59b6; }
+        .guard-name { font-size: 13px; color: #c0392b; font-weight: bold; margin-bottom: 8px; }
+        .varya-name { font-size: 13px; color: #9b59b6; font-weight: bold; margin-bottom: 8px; }
+        #guardBtn, #varyaBtn, #varyaLoseBtn, #varyaWinBtn {
             margin-top: 16px; padding: 10px 26px;
-            background: #c0392b; border: none; border-radius: 7px;
+            border: none; border-radius: 7px;
             font-size: 15px; color: #fff; cursor: pointer;
             font-family: 'Courier New', monospace; transition: background 0.2s;
         }
+        #guardBtn { background: #c0392b; }
         #guardBtn:hover { background: #a93226; }
+        #varyaBtn, #varyaLoseBtn, #varyaWinBtn { background: #9b59b6; }
+        #varyaBtn:hover, #varyaLoseBtn:hover, #varyaWinBtn:hover { background: #8e44ad; }
 
-        /* ─── Заглушка мини-игры ─── */
-        #miniGamePlaceholder {
+        #miniGameActive {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            display: none; flex-direction: column;
-            justify-content: center; align-items: center;
-            text-align: center; color: #fff;
-            font-family: 'Courier New', monospace;
-            z-index: 350;
+            background: linear-gradient(180deg, #ffe4c4, #ffd89b, #f5a623);
+            display: none;
+            z-index: 360;
+            overflow: hidden;
         }
-        #miniGamePlaceholder.show { display: flex; animation: fadeIn 0.5s ease; }
-        #miniGamePlaceholder p { font-size: 22px; margin-bottom: 10px; }
-        #miniGamePlaceholder small { font-size: 14px; color: #aaa; }
+        #miniGameActive.show { display: block; }
+        .mini-game-ui {
+            position: absolute;
+            top: 10px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px; color: #5a3a1a;
+            background: rgba(255,255,255,0.85);
+            padding: 8px 20px; border-radius: 20px;
+            z-index: 10;
+        }
+        #miniGameBasket {
+            position: absolute;
+            bottom: 20px;
+            font-size: 50px;
+            z-index: 10;
+            transition: left 0.05s ease;
+        }
+        .mini-game-item {
+            position: absolute;
+            font-size: 36px;
+            z-index: 5;
+            pointer-events: none;
+        }
 
-        /* ─── Плачущие эмодзи над Мишей ─── */
         .cry-emoji {
             position: absolute;
             font-size: 28px;
@@ -268,26 +285,23 @@
 <body>
 <div id="gameContainer">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div class="instructions">🎮 Стрелочки - движение<br>⏎ ENTER - взаимодействие</div>
+    <div class="instructions">🎮 Стрелочки - движение<br>⏎ ENTER - взаимодействие<br>1-6 - уровни для теста</div>
     <div id="levelLabel" class="level-label">🏠 Уровень 1</div>
     <div id="dialogue" class="dialogue"></div>
 
-    <!-- Уровень 1: записка на компьютере -->
     <div id="fullscreenMessage" class="fullscreen-message">
         <p>💌 С днем рождения Аленка!<br><br>
         <small>Выходи на улицу скорее, у меня для тебя кое-что есть! Миша</small><br><br>
         <small>Нажмите ESC чтобы закрыть</small></p>
     </div>
 
-    <!-- Плашки над персонажами -->
     <div id="mishaBubble" class="speech-bubble"></div>
     <div id="alenaBubble" class="speech-bubble"></div>
     <div id="guardBubble" class="speech-bubble" style="border-color:#c0392b; max-width:340px; white-space:normal; text-align:center;"></div>
+    <div id="varyaBubble" class="speech-bubble" style="border-color:#9b59b6; max-width:340px; white-space:normal; text-align:center;"></div>
 
-    <!-- Большое сердце -->
     <div id="bigHeart">❤️</div>
 
-    <!-- Выбор: скушать / отказаться -->
     <div id="pizzaChoice">
         <p>🍕 У Алёнки в руках день-рожденская питса!</p>
         <div class="choice-btns">
@@ -296,7 +310,6 @@
         </div>
     </div>
 
-    <!-- Экран после питсы -->
     <div id="pizzaFullscreen">
         <div class="pizza-big">🍕</div>
         <p>Какая вкусная питса!<br>
@@ -306,18 +319,37 @@
 
     <div id="levelTransition"></div>
 
-    <!-- Диалог охранника -->
     <div id="guardDialogue">
         <div class="guard-name">🚨 Охранник</div>
         <div id="guardText"></div>
         <button id="guardBtn">Дальше ➜</button>
     </div>
 
-    <!-- Заглушка мини-игры -->
-    <div id="miniGamePlaceholder">
-        <div style="font-size:40px; margin-bottom:16px;">🎮</div>
-        <p>Место для мини-игры</p>
-        <small>Скрипт будет добавлен позже</small>
+    <div id="varyaDialogue">
+        <div class="varya-name">👩 Варя</div>
+        <div id="varyaText"></div>
+        <button id="varyaBtn">Помочь! 💜</button>
+    </div>
+
+    <div id="varyaLoseDialogue">
+        <div class="varya-name">👩 Варя</div>
+        <div id="varyaLoseText">Ничего страшного! Давай попробуем сначала 💜</div>
+        <button id="varyaLoseBtn">Попробовать снова 🔄</button>
+    </div>
+
+    <div id="varyaWinDialogue">
+        <div class="varya-name">👩 Варя</div>
+        <div id="varyaWinText">Ура! Теперь у нас столько питсы! Пойдём скорее к Дашке и Соньке на второй этаж! 🍕🎉</div>
+        <button id="varyaWinBtn">Пойдём! 🏃‍♀️</button>
+    </div>
+
+    <div id="miniGameActive">
+        <div class="mini-game-ui">
+            <span id="mgScore">🍕 0/10</span>
+            <span id="mgLives">❤️❤️❤️</span>
+            <span id="mgTimer">⏱ 40с</span>
+        </div>
+        <div id="miniGameBasket">🧺</div>
     </div>
 </div>
 
@@ -336,8 +368,21 @@
     const guardDialogueEl   = document.getElementById('guardDialogue');
     const guardTextEl       = document.getElementById('guardText');
     const guardBtnEl        = document.getElementById('guardBtn');
-    const miniGameEl        = document.getElementById('miniGamePlaceholder');
+    const varyaDialogueEl   = document.getElementById('varyaDialogue');
+    const varyaTextEl       = document.getElementById('varyaText');
+    const varyaBtnEl        = document.getElementById('varyaBtn');
+    const varyaLoseDialogueEl = document.getElementById('varyaLoseDialogue');
+    const varyaLoseBtnEl      = document.getElementById('varyaLoseBtn');
+    const varyaWinDialogueEl  = document.getElementById('varyaWinDialogue');
+    const varyaWinBtnEl       = document.getElementById('varyaWinBtn');
     const guardBubbleEl     = document.getElementById('guardBubble');
+    const varyaBubbleEl     = document.getElementById('varyaBubble');
+
+    const miniGameActiveEl = document.getElementById('miniGameActive');
+    const mgScoreEl        = document.getElementById('mgScore');
+    const mgLivesEl        = document.getElementById('mgLives');
+    const mgTimerEl        = document.getElementById('mgTimer');
+    const mgBasketEl       = document.getElementById('miniGameBasket');
 
     // ─── КАРТИНКИ ───────────────────────────────────────────────────
     const images = {
@@ -348,7 +393,12 @@
         room:       new Image(),
         street:     new Image(),
         liceum:     new Image(),
-        guard:      new Image()
+        guard:      new Image(),
+        varya:      new Image(),
+        koridor:    new Image(),
+        dashka:     new Image(),
+        sonka:      new Image(),
+        koridor2:   new Image()
     };
     images.alena.src      = 'alena.png';
     images.misha.src      = 'misha.png';
@@ -358,6 +408,11 @@
     images.street.src     = 'street.jpg';
     images.liceum.src     = 'liceum1.jpg';
     images.guard.src      = 'guard.png';
+    images.varya.src      = 'varya.png';
+    images.koridor.src    = 'koridor1.png';
+    images.dashka.src     = 'dashka.png';
+    images.sonka.src      = 'sonka.png';
+    images.koridor2.src   = 'koridor2.png';
 
     // ─── СОСТОЯНИЕ ──────────────────────────────────────────────────
     let currentLevel = 1;
@@ -368,13 +423,10 @@
 
     let tasksCompleted = { cat: false, chinchilla: false, computer: false };
 
-    // Уровень 2: состояние диалога с Мишей
-    // Шаги: 0=ничего, 1=плашка "Ура!", 2=сердце, 3=плашка "питса!", 4=выбор, 5=готово
     let mishaStep = 0;
-    let alenHasPizza = false;   // рисовать пиццу в руках у Алёнки
-    let pizzaScreenReady = false; // ждём ENTER на экране питсы
+    let alenHasPizza = false;
 
-    // ─── ЗОНЫ ───────────────────────────────────────────────────────
+    // ─── ЗОНЫ УРОВНЕЙ ────────────────────────────────────────────────
     const zonesL1 = {
         cat:        { x: 560, y: 320, width: 60, height: 50 },
         chinchilla: { x:  80, y: 360, width: 50, height: 60 },
@@ -389,31 +441,722 @@
     const mishaPos   = { x: 490, y: 390 };
     const zoneMisha  = { x: 450, y: 380, width: 100, height: 70 };
 
-    // ─── УРОВЕНЬ 3 — ЛИЦЕЙ ──────────────────────────────────────────
-    const guardPos  = { x: 370, y: 390 };   // центр, потом поменяешь
+    const guardPos  = { x: 370, y: 390 };
     const zoneGuard = { x: 330, y: 380, width: 100, height: 70 };
     const walkL3    = [{ x: 0, y: 430, width: 800, height: 170 }];
 
-    // guardStep:
-    //  0 = не начат
-    //  1..3 = злые реплики (плашка над охранником)
-    //  4 = предложение сыграть (плашка)
-    //  5 = мини-игра запущена
     let guardStep = 0;
-
-    // Злые реплики — показываем плашками над охранником по очереди
     const guardAngryLines = [
         'Почему без пропуска?? 😠',
         'Как есть пропуск?? Зачем тогда меня тревожишь?!',
         'Не видишь — я занята важным делом!! 😤',
     ];
     const guardGameLine = 'Ладно... хочешь пройти — сыграй со мной! 🎮';
-
     let guardBubbleIndex = 0;
     let guardBubbleTimer = null;
 
     const walkL1 = [{ x: -4,  y: 430, width: 730, height: 170 }];
     const walkL2 = [{ x:  0,  y: 430, width: 800, height: 170 }];
+
+    // Уровень 4 — коридор с Варей
+    const varyaPos  = { x: 400, y: 390 };
+    const zoneVarya = { x: 360, y: 380, width: 100, height: 70 };
+    const walkL4    = [{ x: 0, y: 430, width: 800, height: 170 }];
+
+    // Уровень 6 — коридор 2 с Дашкой и Сонькой
+    const dashkaPos  = { x: 250, y: 390 };
+    const sonkaPos   = { x: 500, y: 390 };
+    const zoneDashka = { x: 210, y: 380, width: 100, height: 70 };
+    const zoneSonka  = { x: 460, y: 380, width: 100, height: 70 };
+    const walkL6     = [{ x: 0, y: 430, width: 800, height: 170 }];
+
+    // ─── МИНИ-ИГРА ВАРИ: ПИТСА-СЕРПАНТИН ────────────────────────────
+    let mgRunning    = false;
+    let mgScore      = 0;
+    let mgLives      = 3;
+    let mgTimeLeft   = 40;
+    let mgBasketX    = 380;
+    let mgItems      = [];
+    let mgSpawnTimer = null;
+    let mgGameTimer  = null;
+    const MG_BASKET_SPEED = 8;
+    let mgActiveGame = ''; // 'pizza' или 'bubble'
+
+    function startPizzaGame() {
+        mgActiveGame = 'pizza';
+        miniGameActiveEl.innerHTML = `
+            <div class="mini-game-ui">
+                <span id="mgScore">🍕 0/10</span>
+                <span id="mgLives">❤️❤️❤️</span>
+                <span id="mgTimer">⏱ 40с</span>
+            </div>
+            <div id="miniGameBasket">🧺</div>
+        `;
+        // Обновить ссылки на элементы
+        updateMgElements();
+
+        miniGameActiveEl.classList.add('show');
+        miniGameActiveEl.style.width = '100%';
+        miniGameActiveEl.style.height = '100%';
+        miniGameActiveEl.style.left = '0';
+        miniGameActiveEl.style.top = '0';
+        miniGameActiveEl.style.transform = 'none';
+        miniGameActiveEl.style.background = "linear-gradient(180deg, #ffe4c4, #ffd89b, #f5a623)";
+
+        mgScore = 0;
+        mgLives = 3;
+        mgTimeLeft = 40;
+        mgBasketX = 380;
+        mgItems = [];
+        mgRunning = true;
+
+        updateMgUI();
+        if (mgBasketEl) mgBasketEl.style.left = mgBasketX + 'px';
+
+        mgSpawnTimer = setInterval(spawnMgItem, 700);
+        mgGameTimer = setInterval(() => {
+            mgTimeLeft--;
+            updateMgUI();
+            if (mgTimeLeft <= 0) endMiniGame(false);
+        }, 1000);
+    }
+
+    function updateMgElements() {
+        // Переподключаем ссылки на элементы после пересоздания innerHTML
+        window._mgScoreEl = document.getElementById('mgScore');
+        window._mgLivesEl = document.getElementById('mgLives');
+        window._mgTimerEl = document.getElementById('mgTimer');
+        window._mgBasketEl = document.getElementById('miniGameBasket');
+    }
+
+    function getMgScoreEl() { return window._mgScoreEl || mgScoreEl; }
+    function getMgLivesEl() { return window._mgLivesEl || mgLivesEl; }
+    function getMgTimerEl() { return window._mgTimerEl || mgTimerEl; }
+    function getMgBasketEl() { return window._mgBasketEl || mgBasketEl; }
+
+    function updateMgUI() {
+        const scoreEl = getMgScoreEl();
+        const livesEl = getMgLivesEl();
+        const timerEl = getMgTimerEl();
+        if (scoreEl) scoreEl.textContent = '🍕 ' + mgScore + '/10';
+        if (livesEl) livesEl.textContent = '❤️'.repeat(mgLives) + '🖤'.repeat(3 - mgLives);
+        if (timerEl) timerEl.textContent = '⏱ ' + mgTimeLeft + 'с';
+    }
+
+    function spawnMgItem() {
+        if (mgActiveGame !== 'pizza') return;
+        const isGood = Math.random() < 0.4;
+        const emoji = isGood ? '🍕' : ['🧅','💀','🐀','🗑️','💩'][Math.floor(Math.random()*5)];
+        mgItems.push({
+            x: Math.random() * 750,
+            y: -40,
+            speed: 2 + Math.random() * 4,
+            good: isGood,
+            emoji: emoji
+        });
+    }
+
+    function stopMiniGame() {
+        mgRunning = false;
+        clearInterval(mgSpawnTimer);
+        clearInterval(mgGameTimer);
+        document.querySelectorAll('.mini-game-item').forEach(el => el.remove());
+        mgItems = [];
+        miniGameActiveEl.classList.remove('show');
+        miniGameActiveEl.innerHTML = '';
+    }
+
+    function endMiniGame(won) {
+        stopMiniGame();
+        if (won) {
+            varyaWinDialogueEl.classList.add('show');
+        } else {
+            varyaLoseDialogueEl.classList.add('show');
+        }
+    }
+
+    function updateMiniGameItems() {
+        if (mgActiveGame !== 'pizza') return;
+        document.querySelectorAll('.mini-game-item').forEach(el => el.remove());
+        for (const item of mgItems) {
+            const div = document.createElement('div');
+            div.className = 'mini-game-item';
+            div.textContent = item.emoji;
+            div.style.left = item.x + 'px';
+            div.style.top = item.y + 'px';
+            miniGameActiveEl.appendChild(div);
+        }
+    }
+
+    varyaLoseBtnEl.addEventListener('click', () => {
+        varyaLoseDialogueEl.classList.remove('show');
+        startPizzaGame();
+    });
+
+    varyaWinBtnEl.addEventListener('click', () => {
+        varyaWinDialogueEl.classList.remove('show');
+        doTransition(() => {
+            currentLevel = 6;
+            levelLabelEl.textContent = '🏫 Уровень 6';
+            player.x = 50; player.y = 450;
+        });
+    });
+
+    // ─── МИНИ-ИГРА ОХРАННИЦЫ: BUBBLE SHOOTER ──────────────────────────
+    let bsRunning = false;
+    let bsCanvas, bsCtx;
+    let bsLastframe = 0;
+    let bsFpstime = 0;
+    let bsFramecount = 0;
+    let bsFps = 0;
+    let bsInitialized = false;
+
+    let bsLevel = {
+        x: 4, y: 83, width: 0, height: 0,
+        columns: 15, rows: 14,
+        tilewidth: 40, tileheight: 40, rowheight: 34, radius: 20,
+        tiles: []
+    };
+
+    let bsPlayer = {
+        x: 0, y: 0, angle: 0, tiletype: 0,
+        bubble: { x: 0, y: 0, angle: 0, speed: 1000, dropspeed: 900, tiletype: 0, visible: false },
+        nextbubble: { x: 0, y: 0, tiletype: 0 }
+    };
+
+    const bsNeighborsoffsets = [
+        [[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
+        [[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]
+    ];
+
+    const bsBubblecolors = 7;
+    const bsGamestates = { init:0, ready:1, shootbubble:2, removecluster:3, gameover:4, won:5 };
+    let bsGamestate;
+    let bsScore = 0;
+    let bsTurncounter = 0;
+    let bsRowoffset = 0;
+    let bsAnimationstate = 0;
+    let bsCluster = [];
+    let bsFloatingclusters = [];
+    let bsBubbleimage;
+    let bsLoadcount = 0;
+    let bsLoadtotal = 0;
+    let bsPreloaded = false;
+    let bsScoreToWin = 10000;
+
+    function bsLoadImages(imagefiles) {
+        bsLoadcount = 0;
+        bsLoadtotal = imagefiles.length;
+        bsPreloaded = false;
+        let loadedimages = [];
+        for (let i = 0; i < imagefiles.length; i++) {
+            let image = new Image();
+            image.onload = function() {
+                bsLoadcount++;
+                if (bsLoadcount == bsLoadtotal) bsPreloaded = true;
+            };
+            image.src = imagefiles[i];
+            loadedimages[i] = image;
+        }
+        return loadedimages;
+    }
+
+    class BsTile {
+        constructor(x, y, type, shift) {
+            this.x = x; this.y = y; this.type = type;
+            this.removed = false; this.shift = shift || 0;
+            this.velocity = 0; this.alpha = 1; this.processed = false;
+        }
+    }
+
+    function bsGetTileCoordinate(column, row) {
+        let tilex = bsLevel.x + column * bsLevel.tilewidth;
+        if ((row + bsRowoffset) % 2) tilex += bsLevel.tilewidth / 2;
+        let tiley = bsLevel.y + row * bsLevel.rowheight;
+        return { tilex, tiley };
+    }
+
+    function bsGetGridPosition(x, y) {
+        let gridy = Math.floor((y - bsLevel.y) / bsLevel.rowheight);
+        let xoffset = (gridy + bsRowoffset) % 2 ? bsLevel.tilewidth / 2 : 0;
+        let gridx = Math.floor(((x - xoffset) - bsLevel.x) / bsLevel.tilewidth);
+        return { x: gridx, y: gridy };
+    }
+
+    function bsDrawBubble(x, y, index) {
+        if (index < 0 || index >= bsBubblecolors) return;
+        bsCtx.drawImage(bsBubbleimage, index * 40, 0, 40, 40, x, y, bsLevel.tilewidth, bsLevel.tileheight);
+    }
+
+    function bsDegToRad(angle) { return angle * (Math.PI / 180); }
+    function bsRadToDeg(angle) { return angle * (180 / Math.PI); }
+    function bsRandRange(low, high) { return Math.floor(low + Math.random() * (high - low + 1)); }
+
+    function bsCircleIntersection(x1, y1, r1, x2, y2, r2) {
+        let dx = x1 - x2, dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy) < r1 + r2;
+    }
+
+    function bsGetNeighbors(tile) {
+        let tilerow = (tile.y + bsRowoffset) % 2;
+        let n = bsNeighborsoffsets[tilerow];
+        let neighbors = [];
+        for (let i = 0; i < n.length; i++) {
+            let nx = tile.x + n[i][0], ny = tile.y + n[i][1];
+            if (nx >= 0 && nx < bsLevel.columns && ny >= 0 && ny < bsLevel.rows)
+                neighbors.push(bsLevel.tiles[nx][ny]);
+        }
+        return neighbors;
+    }
+
+    function bsResetProcessed() {
+        for (let i = 0; i < bsLevel.columns; i++)
+            for (let j = 0; j < bsLevel.rows; j++)
+                bsLevel.tiles[i][j].processed = false;
+    }
+
+    function bsResetRemoved() {
+        for (let i = 0; i < bsLevel.columns; i++)
+            for (let j = 0; j < bsLevel.rows; j++)
+                bsLevel.tiles[i][j].removed = false;
+    }
+
+    function bsFindCluster(tx, ty, matchtype, reset, skipremoved) {
+        if (reset) bsResetProcessed();
+        let targettile = bsLevel.tiles[tx][ty];
+        let toprocess = [targettile];
+        targettile.processed = true;
+        let foundcluster = [];
+        while (toprocess.length > 0) {
+            let currenttile = toprocess.pop();
+            if (currenttile.type == -1) continue;
+            if (skipremoved && currenttile.removed) continue;
+            if (!matchtype || currenttile.type == targettile.type) {
+                foundcluster.push(currenttile);
+                let neighbors = bsGetNeighbors(currenttile);
+                for (let i = 0; i < neighbors.length; i++) {
+                    if (!neighbors[i].processed) {
+                        toprocess.push(neighbors[i]);
+                        neighbors[i].processed = true;
+                    }
+                }
+            }
+        }
+        return foundcluster;
+    }
+
+    function bsFindFloatingClusters() {
+        bsResetProcessed();
+        let foundclusters = [];
+        for (let i = 0; i < bsLevel.columns; i++) {
+            for (let j = 0; j < bsLevel.rows; j++) {
+                let tile = bsLevel.tiles[i][j];
+                if (!tile.processed) {
+                    let fc = bsFindCluster(i, j, false, false, true);
+                    if (fc.length <= 0) continue;
+                    let floating = true;
+                    for (let k = 0; k < fc.length; k++) {
+                        if (fc[k].y == 0) { floating = false; break; }
+                    }
+                    if (floating) foundclusters.push(fc);
+                }
+            }
+        }
+        return foundclusters;
+    }
+
+    function bsFindColors() {
+        let foundcolors = [];
+        let colortable = new Array(bsBubblecolors).fill(false);
+        for (let i = 0; i < bsLevel.columns; i++) {
+            for (let j = 0; j < bsLevel.rows; j++) {
+                let tile = bsLevel.tiles[i][j];
+                if (tile.type >= 0 && !colortable[tile.type]) {
+                    colortable[tile.type] = true;
+                    foundcolors.push(tile.type);
+                }
+            }
+        }
+        return foundcolors;
+    }
+
+    function bsGetExistingColor() {
+        let existingcolors = bsFindColors();
+        if (existingcolors.length > 0) return existingcolors[bsRandRange(0, existingcolors.length - 1)];
+        return 0;
+    }
+
+    function bsNextBubble() {
+        bsPlayer.tiletype = bsPlayer.nextbubble.tiletype;
+        bsPlayer.bubble.tiletype = bsPlayer.nextbubble.tiletype;
+        bsPlayer.bubble.x = bsPlayer.x;
+        bsPlayer.bubble.y = bsPlayer.y;
+        bsPlayer.bubble.visible = true;
+        bsPlayer.nextbubble.tiletype = bsGetExistingColor();
+    }
+
+    function bsAddBubbles() {
+        for (let i = 0; i < bsLevel.columns; i++)
+            for (let j = 0; j < bsLevel.rows - 1; j++)
+                bsLevel.tiles[i][bsLevel.rows - 1 - j].type = bsLevel.tiles[i][bsLevel.rows - 1 - j - 1].type;
+        for (let i = 0; i < bsLevel.columns; i++)
+            bsLevel.tiles[i][0].type = bsGetExistingColor();
+    }
+
+    function bsCheckGameOver() {
+        for (let i = 0; i < bsLevel.columns; i++) {
+            if (bsLevel.tiles[i][bsLevel.rows - 1].type != -1) {
+                bsNextBubble();
+                bsGamestate = bsGamestates.gameover;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function bsCheckWin() {
+        if (bsScore >= bsScoreToWin) {
+            bsGamestate = bsGamestates.won;
+            return true;
+        }
+        return false;
+    }
+
+    function bsSnapBubble() {
+        let centerx = bsPlayer.bubble.x + bsLevel.tilewidth / 2;
+        let centery = bsPlayer.bubble.y + bsLevel.tileheight / 2;
+        let gridpos = bsGetGridPosition(centerx, centery);
+        gridpos.x = Math.max(0, Math.min(gridpos.x, bsLevel.columns - 1));
+        gridpos.y = Math.max(0, Math.min(gridpos.y, bsLevel.rows - 1));
+
+        let addtile = false;
+        if (bsLevel.tiles[gridpos.x][gridpos.y].type != -1) {
+            for (let newrow = gridpos.y + 1; newrow < bsLevel.rows; newrow++) {
+                if (bsLevel.tiles[gridpos.x][newrow].type == -1) {
+                    gridpos.y = newrow;
+                    addtile = true;
+                    break;
+                }
+            }
+        } else {
+            addtile = true;
+        }
+
+        if (addtile) {
+            bsPlayer.bubble.visible = false;
+            bsLevel.tiles[gridpos.x][gridpos.y].type = bsPlayer.bubble.tiletype;
+            if (bsCheckGameOver()) return;
+            bsCluster = bsFindCluster(gridpos.x, gridpos.y, true, true, false);
+            if (bsCluster.length >= 3) {
+                bsGamestate = bsGamestates.removecluster;
+                return;
+            }
+        }
+
+        bsTurncounter++;
+        if (bsTurncounter >= 5) {
+            bsAddBubbles();
+            bsTurncounter = 0;
+            bsRowoffset = (bsRowoffset + 1) % 2;
+            if (bsCheckGameOver()) return;
+        }
+        bsNextBubble();
+        bsGamestate = bsGamestates.ready;
+    }
+
+    function bsShootBubble() {
+        bsPlayer.bubble.x = bsPlayer.x;
+        bsPlayer.bubble.y = bsPlayer.y;
+        bsPlayer.bubble.angle = bsPlayer.angle;
+        bsPlayer.bubble.tiletype = bsPlayer.tiletype;
+        bsGamestate = bsGamestates.shootbubble;
+    }
+
+    function bsCreateLevel() {
+        for (let j = 0; j < bsLevel.rows; j++) {
+            let randomtile = bsRandRange(0, bsBubblecolors - 1);
+            let count = 0;
+            for (let i = 0; i < bsLevel.columns; i++) {
+                if (count >= 2) {
+                    let newtile = bsRandRange(0, bsBubblecolors - 1);
+                    if (newtile == randomtile) newtile = (newtile + 1) % bsBubblecolors;
+                    randomtile = newtile;
+                    count = 0;
+                }
+                count++;
+                bsLevel.tiles[i][j].type = j < bsLevel.rows / 2 ? randomtile : -1;
+            }
+        }
+    }
+
+    function bsNewGame() {
+        bsScore = 0;
+        bsTurncounter = 0;
+        bsRowoffset = 0;
+        bsGamestate = bsGamestates.ready;
+        bsCreateLevel();
+        bsNextBubble();
+        bsNextBubble();
+    }
+
+    function bsUpdate(tframe) {
+        let dt = (tframe - bsLastframe) / 1000;
+        bsLastframe = tframe;
+        if (bsFpstime > 0.25) {
+            bsFps = Math.round(bsFramecount / bsFpstime);
+            bsFpstime = 0;
+            bsFramecount = 0;
+        }
+        bsFpstime += dt;
+        bsFramecount++;
+
+        if (bsGamestate == bsGamestates.shootbubble) {
+            bsPlayer.bubble.x += dt * bsPlayer.bubble.speed * Math.cos(bsDegToRad(bsPlayer.bubble.angle));
+            bsPlayer.bubble.y += dt * bsPlayer.bubble.speed * -Math.sin(bsDegToRad(bsPlayer.bubble.angle));
+            if (bsPlayer.bubble.x <= bsLevel.x) {
+                bsPlayer.bubble.angle = 180 - bsPlayer.bubble.angle;
+                bsPlayer.bubble.x = bsLevel.x;
+            } else if (bsPlayer.bubble.x + bsLevel.tilewidth >= bsLevel.x + bsLevel.width) {
+                bsPlayer.bubble.angle = 180 - bsPlayer.bubble.angle;
+                bsPlayer.bubble.x = bsLevel.x + bsLevel.width - bsLevel.tilewidth;
+            }
+            if (bsPlayer.bubble.y <= bsLevel.y) {
+                bsPlayer.bubble.y = bsLevel.y;
+                bsSnapBubble();
+                return;
+            }
+            for (let i = 0; i < bsLevel.columns; i++) {
+                for (let j = 0; j < bsLevel.rows; j++) {
+                    let tile = bsLevel.tiles[i][j];
+                    if (tile.type < 0) continue;
+                    let coord = bsGetTileCoordinate(i, j);
+                    if (bsCircleIntersection(bsPlayer.bubble.x + bsLevel.tilewidth/2, bsPlayer.bubble.y + bsLevel.tileheight/2, bsLevel.radius,
+                        coord.tilex + bsLevel.tilewidth/2, coord.tiley + bsLevel.tileheight/2, bsLevel.radius)) {
+                        bsSnapBubble();
+                        return;
+                    }
+                }
+            }
+        } else if (bsGamestate == bsGamestates.removecluster) {
+            if (bsAnimationstate == 0) {
+                bsResetRemoved();
+                for (let i = 0; i < bsCluster.length; i++) bsCluster[i].removed = true;
+                bsScore += bsCluster.length * 100;
+                if (bsCheckWin()) return;
+                bsFloatingclusters = bsFindFloatingClusters();
+                if (bsFloatingclusters.length > 0) {
+                    for (let i = 0; i < bsFloatingclusters.length; i++) {
+                        for (let j = 0; j < bsFloatingclusters[i].length; j++) {
+                            let tile = bsFloatingclusters[i][j];
+                            tile.shift = 0;
+                            tile.velocity = bsPlayer.bubble.dropspeed;
+                            bsScore += 100;
+                        }
+                    }
+                    if (bsCheckWin()) return;
+                }
+                bsAnimationstate = 1;
+            }
+            if (bsAnimationstate == 1) {
+                let tilesleft = false;
+                for (let i = 0; i < bsCluster.length; i++) {
+                    let tile = bsCluster[i];
+                    if (tile.type >= 0) {
+                        tilesleft = true;
+                        tile.alpha -= dt * 15;
+                        if (tile.alpha < 0) tile.alpha = 0;
+                        if (tile.alpha == 0) { tile.type = -1; tile.alpha = 1; }
+                    }
+                }
+                for (let i = 0; i < bsFloatingclusters.length; i++) {
+                    for (let j = 0; j < bsFloatingclusters[i].length; j++) {
+                        let tile = bsFloatingclusters[i][j];
+                        if (tile.type >= 0) {
+                            tilesleft = true;
+                            tile.velocity += dt * 700;
+                            tile.shift += dt * tile.velocity;
+                            tile.alpha -= dt * 8;
+                            if (tile.alpha < 0) tile.alpha = 0;
+                            if (tile.alpha == 0 || (tile.y * bsLevel.rowheight + tile.shift > (bsLevel.rows - 1) * bsLevel.rowheight + bsLevel.tileheight)) {
+                                tile.type = -1; tile.shift = 0; tile.alpha = 1;
+                            }
+                        }
+                    }
+                }
+                if (!tilesleft) {
+                    bsNextBubble();
+                    let tilefound = false;
+                    for (let i = 0; i < bsLevel.columns; i++)
+                        for (let j = 0; j < bsLevel.rows; j++)
+                            if (bsLevel.tiles[i][j].type != -1) { tilefound = true; break; }
+                    bsGamestate = tilefound ? bsGamestates.ready : bsGamestates.gameover;
+                    bsAnimationstate = 0;
+                }
+            }
+        }
+    }
+
+    function bsRenderTiles() {
+        for (let j = 0; j < bsLevel.rows; j++) {
+            for (let i = 0; i < bsLevel.columns; i++) {
+                let tile = bsLevel.tiles[i][j];
+                let coord = bsGetTileCoordinate(i, j);
+                if (tile.type >= 0) {
+                    bsCtx.save();
+                    bsCtx.globalAlpha = tile.alpha;
+                    bsDrawBubble(coord.tilex, coord.tiley + tile.shift, tile.type);
+                    bsCtx.restore();
+                }
+            }
+        }
+    }
+
+    function bsRenderPlayer() {
+        let centerx = bsPlayer.x + bsLevel.tilewidth/2;
+        let centery = bsPlayer.y + bsLevel.tileheight/2;
+        bsCtx.fillStyle = "#7a7a7a";
+        bsCtx.beginPath();
+        bsCtx.arc(centerx, centery, bsLevel.radius+12, 0, 2*Math.PI, false);
+        bsCtx.fill();
+        bsCtx.lineWidth = 2;
+        bsCtx.strokeStyle = "#8c8c8c";
+        bsCtx.stroke();
+        bsCtx.lineWidth = 2;
+        bsCtx.strokeStyle = "#0000ff";
+        bsCtx.beginPath();
+        bsCtx.moveTo(centerx, centery);
+        bsCtx.lineTo(centerx + 1.5*bsLevel.tilewidth * Math.cos(bsDegToRad(bsPlayer.angle)), centery - 1.5*bsLevel.tileheight * Math.sin(bsDegToRad(bsPlayer.angle)));
+        bsCtx.stroke();
+        bsDrawBubble(bsPlayer.nextbubble.x, bsPlayer.nextbubble.y, bsPlayer.nextbubble.tiletype);
+        if (bsPlayer.bubble.visible) bsDrawBubble(bsPlayer.bubble.x, bsPlayer.bubble.y, bsPlayer.bubble.tiletype);
+    }
+
+    function bsRender() {
+        bsCtx.fillStyle = "#e8eaec";
+        bsCtx.fillRect(0, 0, 628, 628);
+        bsCtx.fillStyle = "#8c8c8c";
+        bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4, bsLevel.width+8, bsLevel.height+4-bsLevel.tileheight/2);
+        bsRenderTiles();
+        bsCtx.fillStyle = "#656565";
+        bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4+bsLevel.height+4-bsLevel.tileheight/2, bsLevel.width+8, 2*bsLevel.tileheight+3);
+        bsCtx.fillStyle = "#ffffff";
+        bsCtx.font = "14px Verdana";
+        bsCtx.fillText("Score: " + bsScore + " / " + bsScoreToWin, bsLevel.x + bsLevel.width - 180, bsLevel.y+bsLevel.height+bsLevel.tileheight-bsLevel.tileheight/2+15);
+        bsRenderPlayer();
+        if (bsGamestate == bsGamestates.gameover) {
+            bsCtx.fillStyle = "rgba(0,0,0,0.8)";
+            bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4, bsLevel.width+8, bsLevel.height+2*bsLevel.tileheight+8-bsLevel.tileheight/2);
+            bsCtx.fillStyle = "#ffffff";
+            bsCtx.font = "20px Verdana";
+            bsCtx.fillText("Game Over!", bsLevel.x+bsLevel.width/2-60, bsLevel.y+bsLevel.height/2);
+            bsCtx.fillText("Click to restart", bsLevel.x+bsLevel.width/2-70, bsLevel.y+bsLevel.height/2+30);
+        }
+        if (bsGamestate == bsGamestates.won) {
+            bsCtx.fillStyle = "rgba(0,0,0,0.8)";
+            bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4, bsLevel.width+8, bsLevel.height+2*bsLevel.tileheight+8-bsLevel.tileheight/2);
+            bsCtx.fillStyle = "#ffdd00";
+            bsCtx.font = "20px Verdana";
+            bsCtx.fillText("Победа!", bsLevel.x+bsLevel.width/2-50, bsLevel.y+bsLevel.height/2-10);
+            bsCtx.fillText("Нажми ENTER", bsLevel.x+bsLevel.width/2-70, bsLevel.y+bsLevel.height/2+25);
+        }
+    }
+
+    function bsInit() {
+        bsCanvas = document.createElement('canvas');
+        bsCanvas.width = 628;
+        bsCanvas.height = 628;
+        bsCtx = bsCanvas.getContext('2d');
+        miniGameActiveEl.innerHTML = '';
+        miniGameActiveEl.appendChild(bsCanvas);
+        bsCanvas.style.position = 'absolute';
+        bsCanvas.style.top = '50%';
+        bsCanvas.style.left = '50%';
+        bsCanvas.style.transform = 'translate(-50%, -50%)';
+
+        let bsImages = bsLoadImages(["bubble-sprites.png"]);
+        bsBubbleimage = bsImages[0];
+
+        bsCanvas.addEventListener('mousemove', e => {
+            let rect = bsCanvas.getBoundingClientRect();
+            let mx = (e.clientX - rect.left) / rect.width * 628;
+            let my = (e.clientY - rect.top) / rect.height * 628;
+            let mouseangle = bsRadToDeg(Math.atan2((bsPlayer.y+bsLevel.tileheight/2) - my, mx - (bsPlayer.x+bsLevel.tilewidth/2)));
+            if (mouseangle < 0) mouseangle = 180 + (180 + mouseangle);
+            let lbound = 8, ubound = 172;
+            if (mouseangle > 90 && mouseangle < 270) { if (mouseangle > ubound) mouseangle = ubound; }
+            else { if (mouseangle < lbound || mouseangle >= 270) mouseangle = lbound; }
+            bsPlayer.angle = mouseangle;
+        });
+
+        bsCanvas.addEventListener('mousedown', () => {
+            if (bsGamestate == bsGamestates.ready) bsShootBubble();
+            else if (bsGamestate == bsGamestates.gameover) bsNewGame();
+        });
+
+        for (let i = 0; i < bsLevel.columns; i++) {
+            bsLevel.tiles[i] = [];
+            for (let j = 0; j < bsLevel.rows; j++)
+                bsLevel.tiles[i][j] = new BsTile(i, j, 0, 0);
+        }
+        bsLevel.width = bsLevel.columns * bsLevel.tilewidth + bsLevel.tilewidth/2;
+        bsLevel.height = (bsLevel.rows-1) * bsLevel.rowheight + bsLevel.tileheight;
+        bsPlayer.x = bsLevel.x + bsLevel.width/2 - bsLevel.tilewidth/2;
+        bsPlayer.y = bsLevel.y + bsLevel.height;
+        bsPlayer.angle = 90;
+        bsPlayer.tiletype = 0;
+        bsPlayer.nextbubble.x = bsPlayer.x - 2 * bsLevel.tilewidth;
+        bsPlayer.nextbubble.y = bsPlayer.y;
+
+        bsNewGame();
+        bsLastframe = performance.now();
+        bsInitialized = true;
+    }
+
+    function bsLoop(tframe) {
+        if (!bsRunning) return;
+        requestAnimationFrame(bsLoop);
+        if (!bsInitialized) {
+            bsCtx.fillStyle = "#e8eaec";
+            bsCtx.fillRect(0, 0, 628, 628);
+            let pct = bsLoadcount/bsLoadtotal;
+            bsCtx.fillStyle = "#ff8080";
+            bsCtx.fillRect(18, 580, pct*592, 20);
+            bsCtx.fillStyle = "#000";
+            bsCtx.font = "12px Verdana";
+            bsCtx.fillText("Loading...", 18, 575);
+            if (bsPreloaded) setTimeout(() => bsInitialized = true, 500);
+        } else {
+            bsUpdate(tframe);
+            bsRender();
+        }
+    }
+
+    function startBubbleShooter() {
+        mgActiveGame = 'bubble';
+        stopMiniGame();
+        miniGameActiveEl.classList.add('show');
+        miniGameActiveEl.style.width = '628px';
+        miniGameActiveEl.style.height = '628px';
+        miniGameActiveEl.style.left = '50%';
+        miniGameActiveEl.style.top = '50%';
+        miniGameActiveEl.style.transform = 'translate(-50%, -50%)';
+        miniGameActiveEl.style.background = '#e8eaec';
+
+        bsRunning = true;
+        if (!bsInitialized) {
+            bsInit();
+        } else {
+            bsNewGame();
+            bsLastframe = performance.now();
+        }
+        requestAnimationFrame(bsLoop);
+    }
+
+    function stopBubbleShooter() {
+        bsRunning = false;
+        miniGameActiveEl.classList.remove('show');
+        miniGameActiveEl.innerHTML = '';
+    }
 
     // ─── УТИЛИТЫ ────────────────────────────────────────────────────
     function hit(a, b) {
@@ -427,11 +1170,9 @@
     }
     function imgOk(img) { return img.complete && img.naturalWidth !== 0; }
 
-    // ─── ПЛАШКА НАД ПЕРСОНАЖЕМ ──────────────────────────────────────
     function showBubble(el, text, charX, charY, charW) {
         el.textContent = text;
         el.classList.add('show');
-        // позиционируем по центру персонажа, чуть выше
         requestAnimationFrame(() => {
             const bw = el.offsetWidth;
             const bh = el.offsetHeight;
@@ -440,6 +1181,33 @@
         });
     }
     function hideBubble(el) { el.classList.remove('show'); }
+
+    function resetAllStates() {
+        inputBlocked = false;
+        stopMiniGame();
+        stopBubbleShooter();
+
+        pizzaChoiceEl.classList.remove('show');
+        pizzaFullscreenEl.classList.remove('show');
+        fullscreenMsgEl.classList.remove('show');
+        guardDialogueEl.classList.remove('show');
+        varyaDialogueEl.classList.remove('show');
+        varyaLoseDialogueEl.classList.remove('show');
+        varyaWinDialogueEl.classList.remove('show');
+        dialogueEl.classList.remove('show');
+        hideBubble(mishaBubbleEl);
+        hideBubble(guardBubbleEl);
+        hideBubble(varyaBubbleEl);
+        bigHeartEl.classList.remove('show');
+
+        mishaStep = 99;
+        guardStep = 0;
+        guardBubbleIndex = 0;
+        if (guardBubbleTimer) clearTimeout(guardBubbleTimer);
+        varyaStep = 0;
+        varyaDialogueIndex = 0;
+        alenHasPizza = false;
+    }
 
     // ─── РИСОВАНИЕ ──────────────────────────────────────────────────
     function drawLevel1() {
@@ -461,11 +1229,9 @@
     function drawLevel3() {
         if (imgOk(images.liceum)) ctx.drawImage(images.liceum, 0, 0, 800, 600);
         else { ctx.fillStyle='#e8e0d0'; ctx.fillRect(0,0,800,600); }
-        // Охранник
         if (imgOk(images.guard)) {
             ctx.drawImage(images.guard, guardPos.x, guardPos.y, 60, 110);
         } else {
-            // Запасной рисунок охранника
             ctx.fillStyle='#2c3e50'; ctx.fillRect(guardPos.x, guardPos.y, 55, 100);
             ctx.fillStyle='#e8b4a0'; ctx.fillRect(guardPos.x+10, guardPos.y, 35, 35);
             ctx.font='20px serif'; ctx.textAlign='center';
@@ -474,11 +1240,44 @@
         }
     }
 
+    function drawLevel4() {
+        if (imgOk(images.koridor)) ctx.drawImage(images.koridor, 0, 0, 800, 600);
+        else { ctx.fillStyle = '#d4c8b0'; ctx.fillRect(0, 0, 800, 600); }
+        if (imgOk(images.varya)) ctx.drawImage(images.varya, varyaPos.x, varyaPos.y, 60, 110);
+        else {
+            ctx.fillStyle = '#c8a0d0';
+            ctx.fillRect(varyaPos.x, varyaPos.y, 55, 100);
+            ctx.font = '20px serif'; ctx.textAlign = 'center';
+            ctx.fillText('👩', varyaPos.x + 27, varyaPos.y - 8);
+            ctx.textAlign = 'left';
+        }
+    }
+
+    function drawLevel6() {
+        if (imgOk(images.koridor2)) ctx.drawImage(images.koridor2, 0, 0, 800, 600);
+        else { ctx.fillStyle = '#c0d0c0'; ctx.fillRect(0, 0, 800, 600); }
+        if (imgOk(images.dashka)) ctx.drawImage(images.dashka, dashkaPos.x, dashkaPos.y, 60, 110);
+        else {
+            ctx.fillStyle = '#f0c0a0';
+            ctx.fillRect(dashkaPos.x, dashkaPos.y, 55, 100);
+            ctx.font = '20px serif'; ctx.textAlign = 'center';
+            ctx.fillText('👧', dashkaPos.x + 27, dashkaPos.y - 8);
+            ctx.textAlign = 'left';
+        }
+        if (imgOk(images.sonka)) ctx.drawImage(images.sonka, sonkaPos.x, sonkaPos.y, 60, 110);
+        else {
+            ctx.fillStyle = '#a0c0f0';
+            ctx.fillRect(sonkaPos.x, sonkaPos.y, 55, 100);
+            ctx.font = '20px serif'; ctx.textAlign = 'center';
+            ctx.fillText('👧', sonkaPos.x + 27, sonkaPos.y - 8);
+            ctx.textAlign = 'left';
+        }
+    }
+
     function drawPlayer() {
         if (imgOk(images.alena)) ctx.drawImage(images.alena, player.x, player.y, player.width, player.height);
         else { ctx.fillStyle='#ffb6c1'; ctx.fillRect(player.x, player.y, player.width, player.height); }
 
-        // Пицца в руках
         if (alenHasPizza) {
             ctx.font = '28px serif';
             ctx.textAlign = 'center';
@@ -487,7 +1286,7 @@
         }
     }
 
-    // ─── АНИМАЦИИ КОРМЁЖКИ (уровень 1) ─────────────────────────────
+    // ─── АНИМАЦИИ КОРМЁЖКИ ──────────────────────────────────────────
     function spawnFloating(emoji, left, top, cls) {
         const el = document.createElement('div');
         el.className = cls; el.textContent = emoji;
@@ -510,32 +1309,19 @@
         setTimeout(()=>{ inputBlocked=false; },2000);
     }
 
-    // ─── ПЕРЕХОД ────────────────────────────────────────────────────
     function doTransition(callback) {
         inputBlocked = true;
         levelTransEl.classList.add('fade-out');
         setTimeout(()=>{ callback(); levelTransEl.classList.remove('fade-out'); setTimeout(()=>{ inputBlocked=false; },100); }, 700);
     }
 
-    // ─── ЛОГИКА ДИАЛОГА С МИШЕЙ (уровень 2) ─────────────────────────
-    //
-    // mishaStep:
-    //   0 — подойди (показываем подсказку в dialogue)
-    //   1 — плашка "Ура! С днём рождения!!" → ENTER → большое сердце
-    //   2 — (сердце играет) → после него плашка "питса!"
-    //   3 — плашка "питса!" → ENTER → пицца в руках + выбор
-    //   4 — экран выбора активен
-    //   5 — скушали → экран питсы
-    //   6 — ждём ENTER на экране питсы → переход на уровень 3
-
+    // ─── ДИАЛОГ С МИШЕЙ ─────────────────────────────────────────────
     function mishaInteract() {
         if (mishaStep === 0) {
-            // Показываем плашку над Мишей
             mishaStep = 1;
             inputBlocked = true;
             showBubble(mishaBubbleEl, 'Ура, Алёнка, с днём рождения тебя!! 🎉', mishaPos.x, mishaPos.y, 65);
             dialogueEl.classList.remove('show');
-            // Показываем подсказку снизу
             setTimeout(()=>{
                 dialogueEl.textContent = '[ ENTER — продолжить ]';
                 dialogueEl.classList.add('show');
@@ -546,16 +1332,13 @@
 
     function mishaEnterPressed() {
         if (mishaStep === 1) {
-            // Прячем плашку, показываем большое сердце
             mishaStep = 2;
             inputBlocked = true;
             hideBubble(mishaBubbleEl);
             dialogueEl.classList.remove('show');
             bigHeartEl.classList.remove('show');
-            void bigHeartEl.offsetWidth; // reflow
+            void bigHeartEl.offsetWidth;
             bigHeartEl.classList.add('show');
-
-            // После сердца — плашка о питсе
             setTimeout(()=>{
                 bigHeartEl.classList.remove('show');
                 mishaStep = 3;
@@ -566,42 +1349,30 @@
             }, 2600);
             return;
         }
-
         if (mishaStep === 3) {
-            // Даём пиццу, показываем выбор
             mishaStep = 4;
             inputBlocked = true;
             hideBubble(mishaBubbleEl);
             dialogueEl.classList.remove('show');
             alenHasPizza = true;
-            // Маленькая задержка для эффекта "взяла"
-            setTimeout(()=>{
-                pizzaChoiceEl.classList.add('show');
-                // inputBlocked остаётся true, клики обрабатываются кнопками
-            }, 400);
+            setTimeout(()=>{ pizzaChoiceEl.classList.add('show'); }, 400);
             return;
         }
-
         if (mishaStep === 6) {
-            // Переход на уровень 3
             pizzaFullscreenEl.classList.remove('show');
             doTransition(()=>{
                 currentLevel = 3;
                 levelLabelEl.textContent = '🌅 Уровень 3';
                 player.x = 100; player.y = 450;
                 mishaStep = 99;
-                // TODO: здесь будет локация уровня 3
             });
         }
     }
 
-    // Кнопка "Скушать"
     document.getElementById('btnEat').addEventListener('click', ()=>{
         pizzaChoiceEl.classList.remove('show');
         mishaStep = 5;
         alenHasPizza = false;
-
-        // Анимация поедания — летящие кусочки
         for (let i=0;i<6;i++) {
             setTimeout(()=> spawnFloating(
                 ['🍕','✨','😋','💛'][Math.floor(Math.random()*4)],
@@ -610,20 +1381,15 @@
                 'heart'
             ), i*150);
         }
-
         setTimeout(()=>{
             mishaStep = 6;
             pizzaFullscreenEl.classList.add('show');
             inputBlocked = false;
-            // обновляем подсказку
-            // (экран сам содержит hint)
         }, 800);
     });
 
-    // Кнопка "Отказаться"
     document.getElementById('btnSkip').addEventListener('click', ()=>{
         pizzaChoiceEl.classList.remove('show');
-        // Плачущие эмодзи над Мишей
         for (let i=0;i<5;i++) {
             setTimeout(()=>{
                 const el = document.createElement('div');
@@ -635,17 +1401,10 @@
                 setTimeout(()=>el.remove(), 1500);
             }, i*200);
         }
-        // Через секунду снова показываем выбор
-        setTimeout(()=>{
-            pizzaChoiceEl.classList.add('show');
-        }, 1800);
+        setTimeout(()=>{ pizzaChoiceEl.classList.add('show'); }, 1800);
     });
 
-    // ─── ЛОГИКА ОХРАННИКА (уровень 3) ───────────────────────────────
-    //
-    // При первом ENTER: злые плашки над охранником по очереди (авто, 1.8с каждая),
-    // затем плашка с предложением сыграть + кнопка «Сыграть!» в диалоге снизу.
-
+    // ─── ДИАЛОГ С ОХРАННИКОМ ────────────────────────────────────────
     function guardInteract() {
         if (guardStep !== 0) return;
         guardStep = 1;
@@ -657,19 +1416,16 @@
 
     function showNextAngryBubble() {
         if (guardBubbleIndex < guardAngryLines.length) {
-            showBubble(guardBubbleEl, guardAngryLines[guardBubbleIndex],
-                       guardPos.x, guardPos.y, 60);
+            showBubble(guardBubbleEl, guardAngryLines[guardBubbleIndex], guardPos.x, guardPos.y, 60);
             guardBubbleIndex++;
             guardBubbleTimer = setTimeout(() => {
                 hideBubble(guardBubbleEl);
                 setTimeout(showNextAngryBubble, 300);
             }, 1900);
         } else {
-            // Все злые реплики прошли — финальная плашка "сыграй"
             guardStep = 4;
             showBubble(guardBubbleEl, guardGameLine, guardPos.x, guardPos.y, 60);
             setTimeout(() => {
-                // Показываем кнопку в нижнем диалоге
                 guardTextEl.textContent = '...Ладно. Хочешь пройти — сыграй со мной! 🎮';
                 guardBtnEl.textContent  = 'Сыграть! 🎮';
                 guardDialogueEl.classList.add('show');
@@ -684,28 +1440,103 @@
             hideBubble(guardBubbleEl);
             guardStep = 5;
             inputBlocked = true;
-            miniGameEl.classList.add('show');
-            // ← сюда позже вставим скрипт мини-игры
+            startBubbleShooter();
         }
     });
 
     function updateDialogueL3() {
-        // Пока идут плашки или мини-игра — нижний диалог не трогаем
-        if (guardStep > 0) {
-            if (guardStep === 0) { dialogueEl.classList.remove('show'); currentDialogue = null; }
+        if (guardStep > 0 && guardStep < 4) {
+            dialogueEl.classList.remove('show');
+            currentDialogue = null;
             return;
         }
-        if (hit(player, zoneGuard)) {
+        if (hit(player, zoneGuard) && guardStep === 0) {
             dialogueEl.textContent = '🚨 Подойти к охраннику (ENTER)';
             dialogueEl.classList.add('show');
             currentDialogue = 'guard';
-        } else {
+        } else if (!hit(player, zoneGuard)) {
             dialogueEl.classList.remove('show');
             currentDialogue = null;
         }
     }
 
-    // ─── ДИАЛОГ ПОДСКАЗКИ (уровень 2) ───────────────────────────────
+    // ─── ДИАЛОГ С ВАРЕЙ ─────────────────────────────────────────────
+    const varyaDialogues = [
+        'О, Алёнка! Я хотела пойти в столовую, а она закрыта 😔😔😔😔',
+        'Я так хотела питсы...',
+        'Слушай, а может ты знаешь, где её найти?'
+    ];
+    let varyaDialogueIndex = 0;
+    let varyaStep = 0;
+
+    function varyaInteract() {
+        if (varyaStep !== 0) return;
+        varyaStep = 1;
+        varyaDialogueIndex = 0;
+        inputBlocked = true;
+        dialogueEl.classList.remove('show');
+        showNextVaryaBubble();
+    }
+
+    function showNextVaryaBubble() {
+        if (varyaDialogueIndex < varyaDialogues.length) {
+            showBubble(varyaBubbleEl, varyaDialogues[varyaDialogueIndex], varyaPos.x, varyaPos.y, 60);
+            varyaDialogueIndex++;
+            dialogueEl.textContent = '[ ENTER — дальше ]';
+            dialogueEl.classList.add('show');
+            inputBlocked = false;
+        } else {
+            hideBubble(varyaBubbleEl);
+            dialogueEl.classList.remove('show');
+            varyaStep = 2;
+            varyaTextEl.textContent = '...Поможешь мне найти питсу? 🍕';
+            varyaBtnEl.textContent  = 'Помочь! 💜';
+            varyaDialogueEl.classList.add('show');
+            inputBlocked = false;
+        }
+    }
+
+    varyaBtnEl.addEventListener('click', () => {
+        if (varyaStep === 2) {
+            varyaDialogueEl.classList.remove('show');
+            hideBubble(varyaBubbleEl);
+            varyaStep = 3;
+            inputBlocked = true;
+            startPizzaGame();
+        }
+    });
+
+    function updateDialogueL4() {
+        if (varyaStep === 1 || varyaStep === 2 ||
+            varyaLoseDialogueEl.classList.contains('show') ||
+            varyaWinDialogueEl.classList.contains('show')) return;
+
+        if (varyaStep === 3 &&
+            !varyaLoseDialogueEl.classList.contains('show') &&
+            !varyaWinDialogueEl.classList.contains('show')) {
+            if (hit(player, zoneVarya)) {
+                dialogueEl.textContent = '💬 Подойти к Варе (ENTER)';
+                dialogueEl.classList.add('show');
+                currentDialogue = 'varya';
+            } else {
+                dialogueEl.classList.remove('show');
+                currentDialogue = null;
+            }
+            return;
+        }
+
+        if (varyaStep === 0) {
+            if (hit(player, zoneVarya)) {
+                dialogueEl.textContent = '💬 Подойти к Варе (ENTER)';
+                dialogueEl.classList.add('show');
+                currentDialogue = 'varya';
+            } else {
+                dialogueEl.classList.remove('show');
+                currentDialogue = null;
+            }
+        }
+    }
+
     function updateDialogueL2() {
         if (inputBlocked || mishaStep >= 1) return;
         if (hit(player, zoneMisha)) {
@@ -718,12 +1549,10 @@
         }
     }
 
-    // ─── ДИАЛОГ ПОДСКАЗКИ (уровень 1) ───────────────────────────────
     function updateDialogueL1() {
         if (inputBlocked) { dialogueEl.classList.remove('show'); currentDialogue=null; return; }
         let near = null;
         for (let name in zonesL1) if (hit(player, zonesL1[name])) { near=name; break; }
-
         if (near==='door') {
             dialogueEl.textContent = tasksCompleted.cat && tasksCompleted.chinchilla
                 ? '🚪 Выйти из дома (ENTER)'
@@ -747,13 +1576,40 @@
     document.addEventListener('keydown', e => {
         keys[e.key] = true;
 
+        if (e.key >= '1' && e.key <= '6') {
+            const lvl = parseInt(e.key);
+            if (lvl === 5) return;
+            resetAllStates();
+            currentLevel = lvl;
+            player.x = 100; player.y = 450;
+            if (lvl === 1) { tasksCompleted = { cat: false, chinchilla: false, computer: false }; mishaStep = 0; }
+            if (lvl === 2) mishaStep = 0;
+            if (lvl === 4) varyaStep = 0;
+            levelLabelEl.textContent =
+                lvl === 1 ? '🏠 Уровень 1' : lvl === 2 ? '🌆 Уровень 2' :
+                lvl === 3 ? '🌅 Уровень 3' : lvl === 4 ? '🏫 Уровень 4' :
+                lvl === 6 ? '🏫 Уровень 6' : '';
+            return;
+        }
+
         if (e.key==='Escape') {
             if (fullscreenMsgEl.classList.contains('show')) fullscreenMsgEl.classList.remove('show');
             return;
         }
 
         if (e.key==='Enter') {
-            // Экран питсы
+            // Победа в Bubble Shooter
+            if (bsRunning && bsGamestate === bsGamestates.won) {
+                stopBubbleShooter();
+                doTransition(() => {
+                    currentLevel = 4;
+                    levelLabelEl.textContent = '🏫 Уровень 4';
+                    player.x = 50; player.y = 450;
+                    varyaStep = 0;
+                });
+                return;
+            }
+
             if (mishaStep===6 && pizzaFullscreenEl.classList.contains('show')) {
                 mishaEnterPressed();
                 return;
@@ -768,23 +1624,16 @@
                     tasksCompleted.computer = true;
                 }
                 else if (currentDialogue==='door' && tasksCompleted.cat && tasksCompleted.chinchilla) {
-                    doTransition(()=>{
-                        currentLevel=2;
-                        levelLabelEl.textContent='🌆 Уровень 2';
-                        player.x=50; player.y=450;
-                    });
+                    doTransition(()=>{ currentLevel=2; levelLabelEl.textContent='🌆 Уровень 2'; player.x=50; player.y=450; });
                 }
             } else if (currentLevel===2) {
-                if (mishaStep===0 && currentDialogue==='misha') {
-                    mishaInteract();
-                } else if (mishaStep===1 || mishaStep===3) {
-                    mishaEnterPressed();
-                }
+                if (mishaStep===0 && currentDialogue==='misha') mishaInteract();
+                else if (mishaStep===1 || mishaStep===3) mishaEnterPressed();
             } else if (currentLevel===3) {
-                if (currentDialogue==='guard' && guardStep===0) {
-                    guardInteract();
-                }
-                // TODO: ENTER внутри мини-игры будет обрабатываться самой игрой
+                if (currentDialogue==='guard' && guardStep===0) guardInteract();
+            } else if (currentLevel===4) {
+                if (currentDialogue==='varya' && varyaStep===0) varyaInteract();
+                else if (varyaStep===1) showNextVaryaBubble();
             }
         }
     });
@@ -797,32 +1646,69 @@
         if      (currentLevel===1) drawLevel1();
         else if (currentLevel===2) drawLevel2();
         else if (currentLevel===3) drawLevel3();
+        else if (currentLevel===4) drawLevel4();
+        else if (currentLevel===6) drawLevel6();
 
-        // Движение (блокируем если inputBlocked ИЛИ активен выбор)
         const anyOverlay = pizzaChoiceEl.classList.contains('show') ||
                            pizzaFullscreenEl.classList.contains('show') ||
                            fullscreenMsgEl.classList.contains('show') ||
-                           miniGameEl.classList.contains('show');
+                           varyaLoseDialogueEl.classList.contains('show') ||
+                           varyaWinDialogueEl.classList.contains('show') ||
+                           varyaDialogueEl.classList.contains('show') ||
+                           guardDialogueEl.classList.contains('show') ||
+                           miniGameActiveEl.classList.contains('show');
 
-        if (!inputBlocked && !anyOverlay) {
-            let nx = player.x, ny = player.y;
-            if (keys['ArrowUp'])    ny -= player.speed;
-            if (keys['ArrowDown'])  ny += player.speed;
-            if (keys['ArrowLeft'])  nx -= player.speed;
-            if (keys['ArrowRight']) nx += player.speed;
+        // Мини-игра Вари (питса-серпантин)
+        if (mgRunning && mgActiveGame === 'pizza') {
+            if (keys['ArrowLeft'])  mgBasketX = Math.max(20, mgBasketX - MG_BASKET_SPEED);
+            if (keys['ArrowRight']) mgBasketX = Math.min(730, mgBasketX + MG_BASKET_SPEED);
+            const basketEl = getMgBasketEl();
+            if (basketEl) basketEl.style.left = mgBasketX + 'px';
 
-            const wz = currentLevel===1 ? walkL1 : currentLevel===2 ? walkL2 : walkL3;
-            const lx = nx+10, rx = nx+player.width-10, fy = ny+player.height-5;
-            if (canWalk(lx,fy,wz) && canWalk(rx,fy,wz)) { player.x=nx; player.y=ny; }
+            for (let i = mgItems.length - 1; i >= 0; i--) {
+                const item = mgItems[i];
+                item.y += item.speed;
+                if (item.y > 510 && item.y < 570) {
+                    const bx = mgBasketX + 25;
+                    if (Math.abs(item.x - bx) < 50) {
+                        if (item.good) {
+                            mgScore++;
+                            updateMgUI();
+                            if (mgScore >= 10) endMiniGame(true);
+                        } else {
+                            mgLives--;
+                            updateMgUI();
+                            const bEl = getMgBasketEl();
+                            if (bEl) { bEl.style.transform = 'translateX(-5px)'; setTimeout(() => { if (bEl) bEl.style.transform = ''; }, 100); }
+                            if (mgLives <= 0) endMiniGame(false);
+                        }
+                        mgItems.splice(i, 1);
+                        continue;
+                    }
+                }
+                if (item.y > 620) mgItems.splice(i, 1);
+            }
+            updateMiniGameItems();
         }
 
-        drawPlayer();
+        // Аленка
+        if (!mgRunning && !bsRunning) {
+            if (!inputBlocked && !anyOverlay) {
+                let nx = player.x, ny = player.y;
+                if (keys['ArrowUp'])    ny -= player.speed;
+                if (keys['ArrowDown'])  ny += player.speed;
+                if (keys['ArrowLeft'])  nx -= player.speed;
+                if (keys['ArrowRight']) nx += player.speed;
+                const wz = currentLevel===1 ? walkL1 : currentLevel===2 ? walkL2 : currentLevel===3 ? walkL3 : currentLevel===4 ? walkL4 : walkL6;
+                const lx = nx+10, rx = nx+player.width-10, fy = ny+player.height-5;
+                if (canWalk(lx,fy,wz) && canWalk(rx,fy,wz)) { player.x=nx; player.y=ny; }
+            }
+            drawPlayer();
+        }
 
-        // Обновляем позицию плашек каждый кадр (персонажи могут двигаться)
         if (currentLevel===2) {
             if (mishaBubbleEl.classList.contains('show')) {
-                const bw = mishaBubbleEl.offsetWidth;
-                const bh = mishaBubbleEl.offsetHeight;
+                const bw = mishaBubbleEl.offsetWidth, bh = mishaBubbleEl.offsetHeight;
                 mishaBubbleEl.style.left = (mishaPos.x + 32 - bw/2) + 'px';
                 mishaBubbleEl.style.top  = (mishaPos.y - bh - 14) + 'px';
             }
@@ -831,12 +1717,18 @@
             updateDialogueL1();
         } else if (currentLevel===3) {
             if (guardBubbleEl.classList.contains('show')) {
-                const bw = guardBubbleEl.offsetWidth;
-                const bh = guardBubbleEl.offsetHeight;
+                const bw = guardBubbleEl.offsetWidth, bh = guardBubbleEl.offsetHeight;
                 guardBubbleEl.style.left = (guardPos.x + 30 - bw/2) + 'px';
                 guardBubbleEl.style.top  = (guardPos.y - bh - 14) + 'px';
             }
             updateDialogueL3();
+        } else if (currentLevel===4) {
+            if (varyaBubbleEl.classList.contains('show')) {
+                const bw = varyaBubbleEl.offsetWidth, bh = varyaBubbleEl.offsetHeight;
+                varyaBubbleEl.style.left = (varyaPos.x + 30 - bw/2) + 'px';
+                varyaBubbleEl.style.top  = (varyaPos.y - bh - 14) + 'px';
+            }
+            updateDialogueL4();
         }
 
         requestAnimationFrame(gameLoop);
