@@ -164,7 +164,8 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        #guardDialogue, #varyaDialogue, #varyaLoseDialogue, #varyaWinDialogue {
+        #guardDialogue, #varyaDialogue, #varyaLoseDialogue, #varyaWinDialogue,
+        #sonkaDialogue, #sonkaWinDialogue, #dashkaDialogue, #dashkaWinDialogue {
             position: absolute;
             bottom: 60px; left: 50%;
             transform: translateX(-50%);
@@ -180,7 +181,8 @@
             max-width: 560px;
             line-height: 1.6;
         }
-        #guardDialogue.show, #varyaDialogue.show, #varyaLoseDialogue.show, #varyaWinDialogue.show {
+        #guardDialogue.show, #varyaDialogue.show, #varyaLoseDialogue.show, #varyaWinDialogue.show,
+        #sonkaDialogue.show, #sonkaWinDialogue.show, #dashkaDialogue.show, #dashkaWinDialogue.show {
             display: block; animation: slideUp 0.35s ease;
         }
         @keyframes slideUp {
@@ -189,9 +191,14 @@
         }
         #guardDialogue { border: 4px solid #c0392b; }
         #varyaDialogue, #varyaLoseDialogue, #varyaWinDialogue { border: 4px solid #9b59b6; }
+        #sonkaDialogue, #sonkaWinDialogue { border: 4px solid #f39c12; }
+        #dashkaDialogue, #dashkaWinDialogue { border: 4px solid #2ecc71; }
         .guard-name { font-size: 13px; color: #c0392b; font-weight: bold; margin-bottom: 8px; }
-        .varya-name { font-size: 13px; color: #9b59b6; font-weight: bold; margin-bottom: 8px; }
-        #guardBtn, #varyaBtn, #varyaLoseBtn, #varyaWinBtn {
+        .varya-name, .dashka-name, .sonka-name { font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+        .varya-name { color: #9b59b6; }
+        .sonka-name { color: #f39c12; }
+        .dashka-name { color: #2ecc71; }
+        #guardBtn, #varyaBtn, #varyaLoseBtn, #varyaWinBtn, #sonkaBtn, #sonkaWinBtn, #dashkaBtn, #dashkaWinBtn {
             margin-top: 16px; padding: 10px 26px;
             border: none; border-radius: 7px;
             font-size: 15px; color: #fff; cursor: pointer;
@@ -201,6 +208,10 @@
         #guardBtn:hover { background: #a93226; }
         #varyaBtn, #varyaLoseBtn, #varyaWinBtn { background: #9b59b6; }
         #varyaBtn:hover, #varyaLoseBtn:hover, #varyaWinBtn:hover { background: #8e44ad; }
+        #sonkaBtn, #sonkaWinBtn { background: #f39c12; }
+        #sonkaBtn:hover, #sonkaWinBtn:hover { background: #d68910; }
+        #dashkaBtn, #dashkaWinBtn { background: #2ecc71; }
+        #dashkaBtn:hover, #dashkaWinBtn:hover { background: #27ae60; }
 
         #miniGameActive {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -233,6 +244,190 @@
             font-size: 36px;
             z-index: 5;
             pointer-events: none;
+        }
+
+        /* Стили для игры "Память" */
+        #memoryGameContainer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(145deg, #1a2a6c, #b21f1f, #fdbb2d);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 400;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        #memoryGameContainer.show {
+            display: flex;
+        }
+        .memory-game-inner {
+            max-width: 580px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border-radius: 40px;
+            padding: 20px 15px 25px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+            max-height: 580px;
+        }
+        .memory-game-inner h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+        .memory-game-inner .subtitle {
+            color: #f0e9d0;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            opacity: 0.9;
+        }
+        .memory-stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 60px;
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .memory-stats span {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 12px;
+            border-radius: 40px;
+        }
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0 15px;
+            padding: 0 5px;
+        }
+        .memory-card {
+            aspect-ratio: 1 / 1;
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #7f5539, 0 6px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.15s ease;
+            color: #2d2d2d;
+            transform: scale(1);
+            user-select: none;
+            border: 2px solid #f8f0e3;
+            overflow: hidden;
+            font-size: 2.4rem;
+        }
+        .memory-card:active {
+            transform: scale(0.94);
+            box-shadow: 0 3px 0 #7f5539;
+        }
+        .memory-card.matched {
+            background: #2e7d32;
+            box-shadow: 0 4px 0 #1b5e20, 0 5px 10px rgba(0, 0, 0, 0.3);
+            cursor: default;
+            border-color: #a5d6a7;
+            transform: scale(0.97);
+        }
+        .memory-card.flipped {
+            background: #fffbe6;
+            box-shadow: 0 4px 0 #b68b6b, 0 5px 10px rgba(0, 0, 0, 0.25);
+            border-color: #ffd966;
+        }
+        .memory-card .card-back-m {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.6rem;
+            background: linear-gradient(145deg, #4a4a8a, #2a2a5e);
+            border-radius: 12px;
+            color: #fff;
+        }
+        .memory-card.flipped .card-back-m,
+        .memory-card.matched .card-back-m {
+            display: none;
+        }
+        .memory-card:not(.flipped):not(.matched) .card-content-m {
+            display: none;
+        }
+        .memory-card.flipped .card-content-m,
+        .memory-card.matched .card-content-m {
+            display: flex;
+        }
+        .card-content-m {
+            display: none;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .card-content-m span {
+            font-size: 2.4rem;
+        }
+        #memory-reset-btn {
+            background: #1a1a2e;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 10px 30px;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #0f0f1a, 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.12s ease;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        #memory-reset-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #0f0f1a;
+        }
+        .memory-message {
+            margin-top: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f9f3d9;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            min-height: 2rem;
+        }
+
+        /* Стили для судоку */
+        #sudokuContainer {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #f5f0e8;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 450;
+            text-align: center;
+        }
+        #sudokuContainer.show { display: block; }
+        #sudokuCanvas { display: block; cursor: pointer; }
+        .sudoku-hint {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #666;
+            font-family: 'Courier New', monospace;
         }
 
         .cry-emoji {
@@ -285,7 +480,7 @@
 <body>
 <div id="gameContainer">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div class="instructions">🎮 Стрелочки - движение<br>⏎ ENTER - взаимодействие<br>1-6 - уровни для теста</div>
+    <div class="instructions">🎮 Стрелочки - движение<br>⏎ ENTER - взаимодействие<br>1-7 - уровни для теста</div>
     <div id="levelLabel" class="level-label">🏠 Уровень 1</div>
     <div id="dialogue" class="dialogue"></div>
 
@@ -299,6 +494,8 @@
     <div id="alenaBubble" class="speech-bubble"></div>
     <div id="guardBubble" class="speech-bubble" style="border-color:#c0392b; max-width:340px; white-space:normal; text-align:center;"></div>
     <div id="varyaBubble" class="speech-bubble" style="border-color:#9b59b6; max-width:340px; white-space:normal; text-align:center;"></div>
+    <div id="sonkaBubble" class="speech-bubble" style="border-color:#f39c12; max-width:340px; white-space:normal; text-align:center;"></div>
+    <div id="dashkaBubble" class="speech-bubble" style="border-color:#2ecc71; max-width:340px; white-space:normal; text-align:center;"></div>
 
     <div id="bigHeart">❤️</div>
 
@@ -343,6 +540,30 @@
         <button id="varyaWinBtn">Пойдём! 🏃‍♀️</button>
     </div>
 
+    <div id="sonkaDialogue">
+        <div class="sonka-name">👧 Сонька</div>
+        <div id="sonkaText">Привет! Дашке нужно сбегать по делам, но она скоро вернётся. А пока... Сыграем в игру на память? 🧠</div>
+        <button id="sonkaBtn">Сыграть! 🎮</button>
+    </div>
+
+    <div id="sonkaWinDialogue">
+        <div class="sonka-name">👧 Сонька</div>
+        <div id="sonkaWinText">Ура! Ты такая внимательная! А пойдёмте к Дашке решать судоку? ✏️</div>
+        <button id="sonkaWinBtn">Пойдём! 🏃‍♀️</button>
+    </div>
+
+    <div id="dashkaDialogue">
+        <div class="dashka-name">👧 Дашка</div>
+        <div id="dashkaText">Всем привет! Готовы к судоку? Сейчас я всё подготовлю... 🧩</div>
+        <button id="dashkaBtn">Готовы! ✏️</button>
+    </div>
+
+    <div id="dashkaWinDialogue">
+        <div class="dashka-name">👧 Дашка</div>
+        <div id="dashkaWinText">Ура! Спасибо, Алёнка! Ты просто гений! 🎉🧩</div>
+        <button id="dashkaWinBtn">Дальше ➜</button>
+    </div>
+
     <div id="miniGameActive">
         <div class="mini-game-ui">
             <span id="mgScore">🍕 0/10</span>
@@ -350,6 +571,25 @@
             <span id="mgTimer">⏱ 40с</span>
         </div>
         <div id="miniGameBasket">🧺</div>
+    </div>
+
+    <div id="memoryGameContainer">
+        <div class="memory-game-inner">
+            <h1>🧠 ПАМЯТЬ</h1>
+            <div class="subtitle">Найди все пары, чтобы продолжить</div>
+            <div class="memory-stats">
+                <span>🏆 Пар: <span id="memory-pairs-matched">0</span>/8</span>
+                <span>🔄 Ходы: <span id="memory-moves-counter">0</span></span>
+            </div>
+            <div class="memory-grid" id="memory-grid"></div>
+            <button id="memory-reset-btn">⟳ Заново</button>
+            <div class="memory-message" id="memory-message-area"></div>
+        </div>
+    </div>
+
+    <div id="sudokuContainer">
+        <canvas id="sudokuCanvas" width="450" height="450"></canvas>
+        <div class="sudoku-hint">🖱 Кликай по клетке | ⌨ Цифры 1-9 | ← Backspace стереть</div>
     </div>
 </div>
 
@@ -377,6 +617,20 @@
     const varyaWinBtnEl       = document.getElementById('varyaWinBtn');
     const guardBubbleEl     = document.getElementById('guardBubble');
     const varyaBubbleEl     = document.getElementById('varyaBubble');
+    const sonkaBubbleEl     = document.getElementById('sonkaBubble');
+    const dashkaBubbleEl    = document.getElementById('dashkaBubble');
+    const sonkaDialogueEl   = document.getElementById('sonkaDialogue');
+    const sonkaBtnEl        = document.getElementById('sonkaBtn');
+    const sonkaWinDialogueEl = document.getElementById('sonkaWinDialogue');
+    const sonkaWinBtnEl     = document.getElementById('sonkaWinBtn');
+    const dashkaDialogueEl  = document.getElementById('dashkaDialogue');
+    const dashkaBtnEl       = document.getElementById('dashkaBtn');
+    const dashkaWinDialogueEl = document.getElementById('dashkaWinDialogue');
+    const dashkaWinBtnEl    = document.getElementById('dashkaWinBtn');
+    const memoryGameContainer = document.getElementById('memoryGameContainer');
+    const sudokuContainer   = document.getElementById('sudokuContainer');
+    const sudokuCanvas      = document.getElementById('sudokuCanvas');
+    const sudokuCtx         = sudokuCanvas.getContext('2d');
 
     const miniGameActiveEl = document.getElementById('miniGameActive');
     const mgScoreEl        = document.getElementById('mgScore');
@@ -398,7 +652,8 @@
         koridor:    new Image(),
         dashka:     new Image(),
         sonka:      new Image(),
-        koridor2:   new Image()
+        koridor2:   new Image(),
+        kabinet:    new Image()
     };
     images.alena.src      = 'alena.png';
     images.misha.src      = 'misha.png';
@@ -413,10 +668,11 @@
     images.dashka.src     = 'dashka.png';
     images.sonka.src      = 'sonka.png';
     images.koridor2.src   = 'koridor2.png';
+    images.kabinet.src    = 'kabinet.png';
 
     // ─── СОСТОЯНИЕ ──────────────────────────────────────────────────
     let currentLevel = 1;
-    let player = { x: 400, y: 350, width: 70, height: 120, speed: 4 };
+    let player = { x: 400, y: 420, width: 140, height: 180, speed: 4 };
     let keys = {};
     let inputBlocked = false;
     let currentDialogue = null;
@@ -443,7 +699,7 @@
 
     const guardPos  = { x: 370, y: 390 };
     const zoneGuard = { x: 330, y: 380, width: 100, height: 70 };
-    const walkL3    = [{ x: 0, y: 430, width: 800, height: 170 }];
+    const walkL3    = [{ x: 0, y: 430, width: 800, height: 200 }];
 
     let guardStep = 0;
     const guardAngryLines = [
@@ -455,20 +711,29 @@
     let guardBubbleIndex = 0;
     let guardBubbleTimer = null;
 
-    const walkL1 = [{ x: -4,  y: 430, width: 730, height: 170 }];
-    const walkL2 = [{ x:  0,  y: 430, width: 800, height: 170 }];
+    const walkL1 = [{ x: -4,  y: 430, width: 730, height: 200 }];
+    const walkL2 = [{ x:  0,  y: 430, width: 800, height: 200 }];
 
-    // Уровень 4 — коридор с Варей
     const varyaPos  = { x: 400, y: 390 };
     const zoneVarya = { x: 360, y: 380, width: 100, height: 70 };
-    const walkL4    = [{ x: 0, y: 430, width: 800, height: 170 }];
+    const walkL4    = [{ x: 0, y: 430, width: 800, height: 200 }];
 
-    // Уровень 6 — коридор 2 с Дашкой и Сонькой
-    const dashkaPos  = { x: 250, y: 390 };
+    const varyaPosL6 = { x: 250, y: 390 };
     const sonkaPos   = { x: 500, y: 390 };
-    const zoneDashka = { x: 210, y: 380, width: 100, height: 70 };
+    const zoneVaryaL6 = { x: 210, y: 380, width: 100, height: 70 };
     const zoneSonka  = { x: 460, y: 380, width: 100, height: 70 };
-    const walkL6     = [{ x: 0, y: 430, width: 800, height: 170 }];
+    const walkL6     = [{ x: 0, y: 430, width: 800, height: 200 }];
+
+    const dashkaPosL7 = { x: 200, y: 390 };
+    const sonkaPosL7  = { x: 350, y: 390 };
+    const varyaPosL7  = { x: 500, y: 390 };
+    const zoneDashkaL7 = { x: 160, y: 380, width: 100, height: 70 };
+    const zoneSonkaL7  = { x: 310, y: 380, width: 100, height: 70 };
+    const zoneVaryaL7  = { x: 460, y: 380, width: 100, height: 70 };
+    const walkL7 = [{ x: 0, y: 430, width: 800, height: 200 }];
+
+    let sonkaStep = 0;
+    let dashkaStep = 0;
 
     // ─── МИНИ-ИГРА ВАРИ: ПИТСА-СЕРПАНТИН ────────────────────────────
     let mgRunning    = false;
@@ -480,7 +745,7 @@
     let mgSpawnTimer = null;
     let mgGameTimer  = null;
     const MG_BASKET_SPEED = 8;
-    let mgActiveGame = ''; // 'pizza' или 'bubble'
+    let mgActiveGame = '';
 
     function startPizzaGame() {
         mgActiveGame = 'pizza';
@@ -492,9 +757,7 @@
             </div>
             <div id="miniGameBasket">🧺</div>
         `;
-        // Обновить ссылки на элементы
         updateMgElements();
-
         miniGameActiveEl.classList.add('show');
         miniGameActiveEl.style.width = '100%';
         miniGameActiveEl.style.height = '100%';
@@ -502,33 +765,19 @@
         miniGameActiveEl.style.top = '0';
         miniGameActiveEl.style.transform = 'none';
         miniGameActiveEl.style.background = "linear-gradient(180deg, #ffe4c4, #ffd89b, #f5a623)";
-
-        mgScore = 0;
-        mgLives = 3;
-        mgTimeLeft = 40;
-        mgBasketX = 380;
-        mgItems = [];
-        mgRunning = true;
-
+        mgScore = 0; mgLives = 3; mgTimeLeft = 40; mgBasketX = 380; mgItems = []; mgRunning = true;
         updateMgUI();
         if (mgBasketEl) mgBasketEl.style.left = mgBasketX + 'px';
-
         mgSpawnTimer = setInterval(spawnMgItem, 700);
-        mgGameTimer = setInterval(() => {
-            mgTimeLeft--;
-            updateMgUI();
-            if (mgTimeLeft <= 0) endMiniGame(false);
-        }, 1000);
+        mgGameTimer = setInterval(() => { mgTimeLeft--; updateMgUI(); if (mgTimeLeft <= 0) endMiniGame(false); }, 1000);
     }
 
     function updateMgElements() {
-        // Переподключаем ссылки на элементы после пересоздания innerHTML
         window._mgScoreEl = document.getElementById('mgScore');
         window._mgLivesEl = document.getElementById('mgLives');
         window._mgTimerEl = document.getElementById('mgTimer');
         window._mgBasketEl = document.getElementById('miniGameBasket');
     }
-
     function getMgScoreEl() { return window._mgScoreEl || mgScoreEl; }
     function getMgLivesEl() { return window._mgLivesEl || mgLivesEl; }
     function getMgTimerEl() { return window._mgTimerEl || mgTimerEl; }
@@ -547,19 +796,12 @@
         if (mgActiveGame !== 'pizza') return;
         const isGood = Math.random() < 0.4;
         const emoji = isGood ? '🍕' : ['🧅','💀','🐀','🗑️','💩'][Math.floor(Math.random()*5)];
-        mgItems.push({
-            x: Math.random() * 750,
-            y: -40,
-            speed: 2 + Math.random() * 4,
-            good: isGood,
-            emoji: emoji
-        });
+        mgItems.push({ x: Math.random() * 750, y: -40, speed: 2 + Math.random() * 4, good: isGood, emoji: emoji });
     }
 
     function stopMiniGame() {
         mgRunning = false;
-        clearInterval(mgSpawnTimer);
-        clearInterval(mgGameTimer);
+        clearInterval(mgSpawnTimer); clearInterval(mgGameTimer);
         document.querySelectorAll('.mini-game-item').forEach(el => el.remove());
         mgItems = [];
         miniGameActiveEl.classList.remove('show');
@@ -568,11 +810,8 @@
 
     function endMiniGame(won) {
         stopMiniGame();
-        if (won) {
-            varyaWinDialogueEl.classList.add('show');
-        } else {
-            varyaLoseDialogueEl.classList.add('show');
-        }
+        if (won) varyaWinDialogueEl.classList.add('show');
+        else varyaLoseDialogueEl.classList.add('show');
     }
 
     function updateMiniGameItems() {
@@ -588,1044 +827,339 @@
         }
     }
 
-    varyaLoseBtnEl.addEventListener('click', () => {
-        varyaLoseDialogueEl.classList.remove('show');
-        startPizzaGame();
-    });
-
+    varyaLoseBtnEl.addEventListener('click', () => { varyaLoseDialogueEl.classList.remove('show'); startPizzaGame(); });
     varyaWinBtnEl.addEventListener('click', () => {
         varyaWinDialogueEl.classList.remove('show');
-        doTransition(() => {
-            currentLevel = 6;
-            levelLabelEl.textContent = '🏫 Уровень 6';
-            player.x = 50; player.y = 450;
-        });
+        doTransition(() => { currentLevel = 6; levelLabelEl.textContent = '🏫 Уровень 6'; player.x = 50; player.y = 450; sonkaStep = 0; });
     });
 
     // ─── МИНИ-ИГРА ОХРАННИЦЫ: BUBBLE SHOOTER ──────────────────────────
-    let bsRunning = false;
-    let bsCanvas, bsCtx;
-    let bsLastframe = 0;
-    let bsFpstime = 0;
-    let bsFramecount = 0;
-    let bsFps = 0;
-    let bsInitialized = false;
+    let bsRunning = false, bsCanvas, bsCtx, bsLastframe = 0, bsFpstime = 0, bsFramecount = 0, bsFps = 0, bsInitialized = false;
+    let bsLevel = { x:4, y:83, width:0, height:0, columns:15, rows:14, tilewidth:40, tileheight:40, rowheight:34, radius:20, tiles:[] };
+    let bsPlayer = { x:0, y:0, angle:0, tiletype:0, bubble:{ x:0, y:0, angle:0, speed:1000, dropspeed:900, tiletype:0, visible:false }, nextbubble:{ x:0, y:0, tiletype:0 } };
+    const bsNeighborsoffsets = [[[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],[[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]];
+    const bsBubblecolors = 7, bsGamestates = { init:0, ready:1, shootbubble:2, removecluster:3, gameover:4, won:5 };
+    let bsGamestate, bsScore = 0, bsTurncounter = 0, bsRowoffset = 0, bsAnimationstate = 0, bsCluster = [], bsFloatingclusters = [], bsBubbleimage, bsLoadcount = 0, bsLoadtotal = 0, bsPreloaded = false, bsScoreToWin = 10000;
 
-    let bsLevel = {
-        x: 4, y: 83, width: 0, height: 0,
-        columns: 15, rows: 14,
-        tilewidth: 40, tileheight: 40, rowheight: 34, radius: 20,
-        tiles: []
-    };
-
-    let bsPlayer = {
-        x: 0, y: 0, angle: 0, tiletype: 0,
-        bubble: { x: 0, y: 0, angle: 0, speed: 1000, dropspeed: 900, tiletype: 0, visible: false },
-        nextbubble: { x: 0, y: 0, tiletype: 0 }
-    };
-
-    const bsNeighborsoffsets = [
-        [[1,0],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]],
-        [[1,0],[1,1],[0,1],[-1,0],[0,-1],[1,-1]]
-    ];
-
-    const bsBubblecolors = 7;
-    const bsGamestates = { init:0, ready:1, shootbubble:2, removecluster:3, gameover:4, won:5 };
-    let bsGamestate;
-    let bsScore = 0;
-    let bsTurncounter = 0;
-    let bsRowoffset = 0;
-    let bsAnimationstate = 0;
-    let bsCluster = [];
-    let bsFloatingclusters = [];
-    let bsBubbleimage;
-    let bsLoadcount = 0;
-    let bsLoadtotal = 0;
-    let bsPreloaded = false;
-    let bsScoreToWin = 10000;
-
-    function bsLoadImages(imagefiles) {
-        bsLoadcount = 0;
-        bsLoadtotal = imagefiles.length;
-        bsPreloaded = false;
-        let loadedimages = [];
-        for (let i = 0; i < imagefiles.length; i++) {
-            let image = new Image();
-            image.onload = function() {
-                bsLoadcount++;
-                if (bsLoadcount == bsLoadtotal) bsPreloaded = true;
-            };
-            image.src = imagefiles[i];
-            loadedimages[i] = image;
-        }
-        return loadedimages;
+    function bsLoadImages(f) { bsLoadcount=0; bsLoadtotal=f.length; bsPreloaded=false; let a=[]; for(let i=0;i<f.length;i++){let im=new Image(); im.onload=function(){bsLoadcount++;if(bsLoadcount==bsLoadtotal)bsPreloaded=true;}; im.src=f[i]; a[i]=im; } return a; }
+    class BsTile { constructor(x,y,t,s){ this.x=x;this.y=y;this.type=t;this.removed=false;this.shift=s||0;this.velocity=0;this.alpha=1;this.processed=false; } }
+    function bsGetTileCoordinate(c,r){ let tx=bsLevel.x+c*bsLevel.tilewidth; if((r+bsRowoffset)%2) tx+=bsLevel.tilewidth/2; return {tilex:tx, tiley:bsLevel.y+r*bsLevel.rowheight}; }
+    function bsGetGridPosition(x,y){ let gy=Math.floor((y-bsLevel.y)/bsLevel.rowheight), xo=(gy+bsRowoffset)%2?bsLevel.tilewidth/2:0; return {x:Math.floor(((x-xo)-bsLevel.x)/bsLevel.tilewidth), y:gy}; }
+    function bsDrawBubble(x,y,i){ if(i<0||i>=bsBubblecolors)return; bsCtx.drawImage(bsBubbleimage,i*40,0,40,40,x,y,bsLevel.tilewidth,bsLevel.tileheight); }
+    function bsDegToRad(a){return a*(Math.PI/180);} function bsRadToDeg(a){return a*(180/Math.PI);} function bsRandRange(l,h){return Math.floor(l+Math.random()*(h-l+1));}
+    function bsCircleIntersection(x1,y1,r1,x2,y2,r2){let dx=x1-x2,dy=y1-y2; return Math.sqrt(dx*dx+dy*dy)<r1+r2;}
+    function bsGetNeighbors(t){let tr=(t.y+bsRowoffset)%2, n=bsNeighborsoffsets[tr], nb=[]; for(let i=0;i<n.length;i++){let nx=t.x+n[i][0], ny=t.y+n[i][1]; if(nx>=0&&nx<bsLevel.columns&&ny>=0&&ny<bsLevel.rows)nb.push(bsLevel.tiles[nx][ny]);} return nb;}
+    function bsResetProcessed(){for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows;j++)bsLevel.tiles[i][j].processed=false;}
+    function bsResetRemoved(){for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows;j++)bsLevel.tiles[i][j].removed=false;}
+    function bsFindCluster(tx,ty,mt,reset,skip){if(reset)bsResetProcessed(); let tt=bsLevel.tiles[tx][ty], tp=[tt]; tt.processed=true; let fc=[]; while(tp.length>0){let ct=tp.pop(); if(ct.type==-1)continue; if(skip&&ct.removed)continue; if(!mt||ct.type==tt.type){fc.push(ct); let nb=bsGetNeighbors(ct); for(let i=0;i<nb.length;i++)if(!nb[i].processed){tp.push(nb[i]);nb[i].processed=true;}}} return fc;}
+    function bsFindFloatingClusters(){bsResetProcessed();let fcs=[]; for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows;j++){let t=bsLevel.tiles[i][j]; if(!t.processed){let fc=bsFindCluster(i,j,false,false,true); if(fc.length<=0)continue; let fl=true; for(let k=0;k<fc.length;k++)if(fc[k].y==0){fl=false;break;} if(fl)fcs.push(fc);}} return fcs;}
+    function bsFindColors(){let fc=[], ct=new Array(bsBubblecolors).fill(false); for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows;j++){let t=bsLevel.tiles[i][j]; if(t.type>=0&&!ct[t.type]){ct[t.type]=true;fc.push(t.type);}} return fc;}
+    function bsGetExistingColor(){let ec=bsFindColors(); return ec.length>0?ec[bsRandRange(0,ec.length-1)]:0;}
+    function bsNextBubble(){bsPlayer.tiletype=bsPlayer.nextbubble.tiletype; bsPlayer.bubble.tiletype=bsPlayer.nextbubble.tiletype; bsPlayer.bubble.x=bsPlayer.x; bsPlayer.bubble.y=bsPlayer.y; bsPlayer.bubble.visible=true; bsPlayer.nextbubble.tiletype=bsGetExistingColor();}
+    function bsAddBubbles(){for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows-1;j++)bsLevel.tiles[i][bsLevel.rows-1-j].type=bsLevel.tiles[i][bsLevel.rows-1-j-1].type; for(let i=0;i<bsLevel.columns;i++)bsLevel.tiles[i][0].type=bsGetExistingColor();}
+    function bsCheckGameOver(){for(let i=0;i<bsLevel.columns;i++)if(bsLevel.tiles[i][bsLevel.rows-1].type!=-1){bsNextBubble();bsGamestate=bsGamestates.gameover;return true;} return false;}
+    function bsCheckWin(){if(bsScore>=bsScoreToWin){bsGamestate=bsGamestates.won;return true;} return false;}
+    function bsSnapBubble(){
+        let cx=bsPlayer.bubble.x+bsLevel.tilewidth/2, cy=bsPlayer.bubble.y+bsLevel.tileheight/2, gp=bsGetGridPosition(cx,cy);
+        gp.x=Math.max(0,Math.min(gp.x,bsLevel.columns-1)); gp.y=Math.max(0,Math.min(gp.y,bsLevel.rows-1));
+        let add=false;
+        if(bsLevel.tiles[gp.x][gp.y].type!=-1){for(let nr=gp.y+1;nr<bsLevel.rows;nr++)if(bsLevel.tiles[gp.x][nr].type==-1){gp.y=nr;add=true;break;}}
+        else add=true;
+        if(add){bsPlayer.bubble.visible=false; bsLevel.tiles[gp.x][gp.y].type=bsPlayer.bubble.tiletype; if(bsCheckGameOver())return; bsCluster=bsFindCluster(gp.x,gp.y,true,true,false); if(bsCluster.length>=3){bsGamestate=bsGamestates.removecluster;return;}}
+        bsTurncounter++; if(bsTurncounter>=5){bsAddBubbles();bsTurncounter=0;bsRowoffset=(bsRowoffset+1)%2;if(bsCheckGameOver())return;}
+        bsNextBubble(); bsGamestate=bsGamestates.ready;
     }
-
-    class BsTile {
-        constructor(x, y, type, shift) {
-            this.x = x; this.y = y; this.type = type;
-            this.removed = false; this.shift = shift || 0;
-            this.velocity = 0; this.alpha = 1; this.processed = false;
+    function bsShootBubble(){bsPlayer.bubble.x=bsPlayer.x;bsPlayer.bubble.y=bsPlayer.y;bsPlayer.bubble.angle=bsPlayer.angle;bsPlayer.bubble.tiletype=bsPlayer.tiletype;bsGamestate=bsGamestates.shootbubble;}
+    function bsCreateLevel(){for(let j=0;j<bsLevel.rows;j++){let rt=bsRandRange(0,bsBubblecolors-1),c=0;for(let i=0;i<bsLevel.columns;i++){if(c>=2){let nt=bsRandRange(0,bsBubblecolors-1);if(nt==rt)nt=(nt+1)%bsBubblecolors;rt=nt;c=0;}c++;bsLevel.tiles[i][j].type=j<bsLevel.rows/2?rt:-1;}}}
+    function bsNewGame(){bsScore=0;bsTurncounter=0;bsRowoffset=0;bsGamestate=bsGamestates.ready;bsCreateLevel();bsNextBubble();bsNextBubble();}
+    function bsUpdate(tf){
+        let dt=(tf-bsLastframe)/1000; bsLastframe=tf;
+        if(bsFpstime>0.25){bsFps=Math.round(bsFramecount/bsFpstime);bsFpstime=0;bsFramecount=0;} bsFpstime+=dt;bsFramecount++;
+        if(bsGamestate==bsGamestates.shootbubble){
+            bsPlayer.bubble.x+=dt*bsPlayer.bubble.speed*Math.cos(bsDegToRad(bsPlayer.bubble.angle));
+            bsPlayer.bubble.y+=dt*bsPlayer.bubble.speed*-Math.sin(bsDegToRad(bsPlayer.bubble.angle));
+            if(bsPlayer.bubble.x<=bsLevel.x){bsPlayer.bubble.angle=180-bsPlayer.bubble.angle;bsPlayer.bubble.x=bsLevel.x;}
+            else if(bsPlayer.bubble.x+bsLevel.tilewidth>=bsLevel.x+bsLevel.width){bsPlayer.bubble.angle=180-bsPlayer.bubble.angle;bsPlayer.bubble.x=bsLevel.x+bsLevel.width-bsLevel.tilewidth;}
+            if(bsPlayer.bubble.y<=bsLevel.y){bsPlayer.bubble.y=bsLevel.y;bsSnapBubble();return;}
+            for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows;j++){let t=bsLevel.tiles[i][j];if(t.type<0)continue;let c=bsGetTileCoordinate(i,j);if(bsCircleIntersection(bsPlayer.bubble.x+bsLevel.tilewidth/2,bsPlayer.bubble.y+bsLevel.tileheight/2,bsLevel.radius,c.tilex+bsLevel.tilewidth/2,c.tiley+bsLevel.tileheight/2,bsLevel.radius)){bsSnapBubble();return;}}
+        } else if(bsGamestate==bsGamestates.removecluster){
+            if(bsAnimationstate==0){bsResetRemoved();for(let i=0;i<bsCluster.length;i++)bsCluster[i].removed=true;bsScore+=bsCluster.length*100;if(bsCheckWin())return;bsFloatingclusters=bsFindFloatingClusters();if(bsFloatingclusters.length>0){for(let i=0;i<bsFloatingclusters.length;i++)for(let j=0;j<bsFloatingclusters[i].length;j++){let t=bsFloatingclusters[i][j];t.shift=0;t.velocity=bsPlayer.bubble.dropspeed;bsScore+=100;} if(bsCheckWin())return;} bsAnimationstate=1;}
+            if(bsAnimationstate==1){let tl=false;for(let i=0;i<bsCluster.length;i++){let t=bsCluster[i];if(t.type>=0){tl=true;t.alpha-=dt*15;if(t.alpha<0)t.alpha=0;if(t.alpha==0){t.type=-1;t.alpha=1;}}}
+            for(let i=0;i<bsFloatingclusters.length;i++)for(let j=0;j<bsFloatingclusters[i].length;j++){let t=bsFloatingclusters[i][j];if(t.type>=0){tl=true;t.velocity+=dt*700;t.shift+=dt*t.velocity;t.alpha-=dt*8;if(t.alpha<0)t.alpha=0;if(t.alpha==0||(t.y*bsLevel.rowheight+t.shift>(bsLevel.rows-1)*bsLevel.rowheight+bsLevel.tileheight)){t.type=-1;t.shift=0;t.alpha=1;}}}
+            if(!tl){bsNextBubble();let tf=false;for(let i=0;i<bsLevel.columns;i++)for(let j=0;j<bsLevel.rows;j++)if(bsLevel.tiles[i][j].type!=-1){tf=true;break;} bsGamestate=tf?bsGamestates.ready:bsGamestates.gameover;bsAnimationstate=0;}}
         }
     }
+    function bsRenderTiles(){for(let j=0;j<bsLevel.rows;j++)for(let i=0;i<bsLevel.columns;i++){let t=bsLevel.tiles[i][j],c=bsGetTileCoordinate(i,j);if(t.type>=0){bsCtx.save();bsCtx.globalAlpha=t.alpha;bsDrawBubble(c.tilex,c.tiley+t.shift,t.type);bsCtx.restore();}}}
+    function bsRenderPlayer(){let cx=bsPlayer.x+bsLevel.tilewidth/2,cy=bsPlayer.y+bsLevel.tileheight/2;bsCtx.fillStyle="#7a7a7a";bsCtx.beginPath();bsCtx.arc(cx,cy,bsLevel.radius+12,0,2*Math.PI,false);bsCtx.fill();bsCtx.lineWidth=2;bsCtx.strokeStyle="#8c8c8c";bsCtx.stroke();bsCtx.lineWidth=2;bsCtx.strokeStyle="#0000ff";bsCtx.beginPath();bsCtx.moveTo(cx,cy);bsCtx.lineTo(cx+1.5*bsLevel.tilewidth*Math.cos(bsDegToRad(bsPlayer.angle)),cy-1.5*bsLevel.tileheight*Math.sin(bsDegToRad(bsPlayer.angle)));bsCtx.stroke();bsDrawBubble(bsPlayer.nextbubble.x,bsPlayer.nextbubble.y,bsPlayer.nextbubble.tiletype);if(bsPlayer.bubble.visible)bsDrawBubble(bsPlayer.bubble.x,bsPlayer.bubble.y,bsPlayer.bubble.tiletype);}
+    function bsRender(){bsCtx.fillStyle="#e8eaec";bsCtx.fillRect(0,0,628,628);bsCtx.fillStyle="#8c8c8c";bsCtx.fillRect(bsLevel.x-4,bsLevel.y-4,bsLevel.width+8,bsLevel.height+4-bsLevel.tileheight/2);bsRenderTiles();bsCtx.fillStyle="#656565";bsCtx.fillRect(bsLevel.x-4,bsLevel.y-4+bsLevel.height+4-bsLevel.tileheight/2,bsLevel.width+8,2*bsLevel.tileheight+3);bsCtx.fillStyle="#ffffff";bsCtx.font="14px Verdana";bsCtx.fillText("Score: "+bsScore+" / "+bsScoreToWin,bsLevel.x+bsLevel.width-180,bsLevel.y+bsLevel.height+bsLevel.tileheight-bsLevel.tileheight/2+15);bsRenderPlayer();
+        if(bsGamestate==bsGamestates.gameover){bsCtx.fillStyle="rgba(0,0,0,0.8)";bsCtx.fillRect(bsLevel.x-4,bsLevel.y-4,bsLevel.width+8,bsLevel.height+2*bsLevel.tileheight+8-bsLevel.tileheight/2);bsCtx.fillStyle="#ffffff";bsCtx.font="20px Verdana";bsCtx.fillText("Game Over!",bsLevel.x+bsLevel.width/2-60,bsLevel.y+bsLevel.height/2);bsCtx.fillText("Click to restart",bsLevel.x+bsLevel.width/2-70,bsLevel.y+bsLevel.height/2+30);}
+        if(bsGamestate==bsGamestates.won){bsCtx.fillStyle="rgba(0,0,0,0.8)";bsCtx.fillRect(bsLevel.x-4,bsLevel.y-4,bsLevel.width+8,bsLevel.height+2*bsLevel.tileheight+8-bsLevel.tileheight/2);bsCtx.fillStyle="#ffdd00";bsCtx.font="20px Verdana";bsCtx.fillText("Победа!",bsLevel.x+bsLevel.width/2-50,bsLevel.y+bsLevel.height/2-10);bsCtx.fillText("Нажми ENTER",bsLevel.x+bsLevel.width/2-70,bsLevel.y+bsLevel.height/2+25);}}
+    function bsInit(){bsCanvas=document.createElement('canvas');bsCanvas.width=628;bsCanvas.height=628;bsCtx=bsCanvas.getContext('2d');miniGameActiveEl.innerHTML='';miniGameActiveEl.appendChild(bsCanvas);bsCanvas.style.cssText='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)';let bi=bsLoadImages(["bubble-sprites.png"]);bsBubbleimage=bi[0];bsCanvas.addEventListener('mousemove',e=>{let r=bsCanvas.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width*628,my=(e.clientY-r.top)/r.height*628,ma=bsRadToDeg(Math.atan2((bsPlayer.y+bsLevel.tileheight/2)-my,mx-(bsPlayer.x+bsLevel.tilewidth/2)));if(ma<0)ma=180+(180+ma);let lb=8,ub=172;if(ma>90&&ma<270){if(ma>ub)ma=ub;}else{if(ma<lb||ma>=270)ma=lb;}bsPlayer.angle=ma;});bsCanvas.addEventListener('mousedown',()=>{if(bsGamestate==bsGamestates.ready)bsShootBubble();else if(bsGamestate==bsGamestates.gameover)bsNewGame();});for(let i=0;i<bsLevel.columns;i++){bsLevel.tiles[i]=[];for(let j=0;j<bsLevel.rows;j++)bsLevel.tiles[i][j]=new BsTile(i,j,0,0);}bsLevel.width=bsLevel.columns*bsLevel.tilewidth+bsLevel.tilewidth/2;bsLevel.height=(bsLevel.rows-1)*bsLevel.rowheight+bsLevel.tileheight;bsPlayer.x=bsLevel.x+bsLevel.width/2-bsLevel.tilewidth/2;bsPlayer.y=bsLevel.y+bsLevel.height;bsPlayer.angle=90;bsPlayer.tiletype=0;bsPlayer.nextbubble.x=bsPlayer.x-2*bsLevel.tilewidth;bsPlayer.nextbubble.y=bsPlayer.y;bsNewGame();bsLastframe=performance.now();bsInitialized=true;}
+    function bsLoop(tf){if(!bsRunning)return;requestAnimationFrame(bsLoop);if(!bsInitialized){bsCtx.fillStyle="#e8eaec";bsCtx.fillRect(0,0,628,628);let p=bsLoadcount/bsLoadtotal;bsCtx.fillStyle="#ff8080";bsCtx.fillRect(18,580,p*592,20);bsCtx.fillStyle="#000";bsCtx.font="12px Verdana";bsCtx.fillText("Loading...",18,575);if(bsPreloaded)setTimeout(()=>bsInitialized=true,500);}else{bsUpdate(tf);bsRender();}}
+    function startBubbleShooter(){mgActiveGame='bubble';stopMiniGame();miniGameActiveEl.classList.add('show');miniGameActiveEl.style.cssText='width:628px;height:628px;left:50%;top:50%;transform:translate(-50%,-50%);background:#e8eaec';bsRunning=true;if(!bsInitialized)bsInit();else{bsNewGame();bsLastframe=performance.now();}requestAnimationFrame(bsLoop);}
+    function stopBubbleShooter(){bsRunning=false;miniGameActiveEl.classList.remove('show');miniGameActiveEl.innerHTML='';}
 
-    function bsGetTileCoordinate(column, row) {
-        let tilex = bsLevel.x + column * bsLevel.tilewidth;
-        if ((row + bsRowoffset) % 2) tilex += bsLevel.tilewidth / 2;
-        let tiley = bsLevel.y + row * bsLevel.rowheight;
-        return { tilex, tiley };
+    // ─── ИГРА "ПАМЯТЬ" ──────────────────────────────────────────────
+    const CARD_SYMBOLS = ['🌟', '🎂', '🎁', '🍕', '💖', '🌸', '🍰', '🎈'];
+    let memoryCards = [], memoryFlippedCards = [], memoryMatchedPairs = 0, memoryMoves = 0, memoryLockBoard = false, memoryTimeoutId = null;
+
+    function initMemoryGame() {
+        if (memoryTimeoutId) { clearTimeout(memoryTimeoutId); memoryTimeoutId = null; }
+        memoryCards = []; memoryFlippedCards = []; memoryMatchedPairs = 0; memoryMoves = 0; memoryLockBoard = false;
+        document.getElementById('memory-pairs-matched').textContent = '0';
+        document.getElementById('memory-moves-counter').textContent = '0';
+        document.getElementById('memory-message-area').textContent = '';
+        const deck = [...CARD_SYMBOLS, ...CARD_SYMBOLS];
+        for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+        memoryCards = deck.map((symbol, index) => ({ id: index, symbol: symbol, isFlipped: false, isMatched: false }));
+        renderMemoryGrid();
     }
 
-    function bsGetGridPosition(x, y) {
-        let gridy = Math.floor((y - bsLevel.y) / bsLevel.rowheight);
-        let xoffset = (gridy + bsRowoffset) % 2 ? bsLevel.tilewidth / 2 : 0;
-        let gridx = Math.floor(((x - xoffset) - bsLevel.x) / bsLevel.tilewidth);
-        return { x: gridx, y: gridy };
-    }
-
-    function bsDrawBubble(x, y, index) {
-        if (index < 0 || index >= bsBubblecolors) return;
-        bsCtx.drawImage(bsBubbleimage, index * 40, 0, 40, 40, x, y, bsLevel.tilewidth, bsLevel.tileheight);
-    }
-
-    function bsDegToRad(angle) { return angle * (Math.PI / 180); }
-    function bsRadToDeg(angle) { return angle * (180 / Math.PI); }
-    function bsRandRange(low, high) { return Math.floor(low + Math.random() * (high - low + 1)); }
-
-    function bsCircleIntersection(x1, y1, r1, x2, y2, r2) {
-        let dx = x1 - x2, dy = y1 - y2;
-        return Math.sqrt(dx * dx + dy * dy) < r1 + r2;
-    }
-
-    function bsGetNeighbors(tile) {
-        let tilerow = (tile.y + bsRowoffset) % 2;
-        let n = bsNeighborsoffsets[tilerow];
-        let neighbors = [];
-        for (let i = 0; i < n.length; i++) {
-            let nx = tile.x + n[i][0], ny = tile.y + n[i][1];
-            if (nx >= 0 && nx < bsLevel.columns && ny >= 0 && ny < bsLevel.rows)
-                neighbors.push(bsLevel.tiles[nx][ny]);
-        }
-        return neighbors;
-    }
-
-    function bsResetProcessed() {
-        for (let i = 0; i < bsLevel.columns; i++)
-            for (let j = 0; j < bsLevel.rows; j++)
-                bsLevel.tiles[i][j].processed = false;
-    }
-
-    function bsResetRemoved() {
-        for (let i = 0; i < bsLevel.columns; i++)
-            for (let j = 0; j < bsLevel.rows; j++)
-                bsLevel.tiles[i][j].removed = false;
-    }
-
-    function bsFindCluster(tx, ty, matchtype, reset, skipremoved) {
-        if (reset) bsResetProcessed();
-        let targettile = bsLevel.tiles[tx][ty];
-        let toprocess = [targettile];
-        targettile.processed = true;
-        let foundcluster = [];
-        while (toprocess.length > 0) {
-            let currenttile = toprocess.pop();
-            if (currenttile.type == -1) continue;
-            if (skipremoved && currenttile.removed) continue;
-            if (!matchtype || currenttile.type == targettile.type) {
-                foundcluster.push(currenttile);
-                let neighbors = bsGetNeighbors(currenttile);
-                for (let i = 0; i < neighbors.length; i++) {
-                    if (!neighbors[i].processed) {
-                        toprocess.push(neighbors[i]);
-                        neighbors[i].processed = true;
-                    }
-                }
-            }
-        }
-        return foundcluster;
-    }
-
-    function bsFindFloatingClusters() {
-        bsResetProcessed();
-        let foundclusters = [];
-        for (let i = 0; i < bsLevel.columns; i++) {
-            for (let j = 0; j < bsLevel.rows; j++) {
-                let tile = bsLevel.tiles[i][j];
-                if (!tile.processed) {
-                    let fc = bsFindCluster(i, j, false, false, true);
-                    if (fc.length <= 0) continue;
-                    let floating = true;
-                    for (let k = 0; k < fc.length; k++) {
-                        if (fc[k].y == 0) { floating = false; break; }
-                    }
-                    if (floating) foundclusters.push(fc);
-                }
-            }
-        }
-        return foundclusters;
-    }
-
-    function bsFindColors() {
-        let foundcolors = [];
-        let colortable = new Array(bsBubblecolors).fill(false);
-        for (let i = 0; i < bsLevel.columns; i++) {
-            for (let j = 0; j < bsLevel.rows; j++) {
-                let tile = bsLevel.tiles[i][j];
-                if (tile.type >= 0 && !colortable[tile.type]) {
-                    colortable[tile.type] = true;
-                    foundcolors.push(tile.type);
-                }
-            }
-        }
-        return foundcolors;
-    }
-
-    function bsGetExistingColor() {
-        let existingcolors = bsFindColors();
-        if (existingcolors.length > 0) return existingcolors[bsRandRange(0, existingcolors.length - 1)];
-        return 0;
-    }
-
-    function bsNextBubble() {
-        bsPlayer.tiletype = bsPlayer.nextbubble.tiletype;
-        bsPlayer.bubble.tiletype = bsPlayer.nextbubble.tiletype;
-        bsPlayer.bubble.x = bsPlayer.x;
-        bsPlayer.bubble.y = bsPlayer.y;
-        bsPlayer.bubble.visible = true;
-        bsPlayer.nextbubble.tiletype = bsGetExistingColor();
-    }
-
-    function bsAddBubbles() {
-        for (let i = 0; i < bsLevel.columns; i++)
-            for (let j = 0; j < bsLevel.rows - 1; j++)
-                bsLevel.tiles[i][bsLevel.rows - 1 - j].type = bsLevel.tiles[i][bsLevel.rows - 1 - j - 1].type;
-        for (let i = 0; i < bsLevel.columns; i++)
-            bsLevel.tiles[i][0].type = bsGetExistingColor();
-    }
-
-    function bsCheckGameOver() {
-        for (let i = 0; i < bsLevel.columns; i++) {
-            if (bsLevel.tiles[i][bsLevel.rows - 1].type != -1) {
-                bsNextBubble();
-                bsGamestate = bsGamestates.gameover;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function bsCheckWin() {
-        if (bsScore >= bsScoreToWin) {
-            bsGamestate = bsGamestates.won;
-            return true;
-        }
-        return false;
-    }
-
-    function bsSnapBubble() {
-        let centerx = bsPlayer.bubble.x + bsLevel.tilewidth / 2;
-        let centery = bsPlayer.bubble.y + bsLevel.tileheight / 2;
-        let gridpos = bsGetGridPosition(centerx, centery);
-        gridpos.x = Math.max(0, Math.min(gridpos.x, bsLevel.columns - 1));
-        gridpos.y = Math.max(0, Math.min(gridpos.y, bsLevel.rows - 1));
-
-        let addtile = false;
-        if (bsLevel.tiles[gridpos.x][gridpos.y].type != -1) {
-            for (let newrow = gridpos.y + 1; newrow < bsLevel.rows; newrow++) {
-                if (bsLevel.tiles[gridpos.x][newrow].type == -1) {
-                    gridpos.y = newrow;
-                    addtile = true;
-                    break;
-                }
-            }
-        } else {
-            addtile = true;
-        }
-
-        if (addtile) {
-            bsPlayer.bubble.visible = false;
-            bsLevel.tiles[gridpos.x][gridpos.y].type = bsPlayer.bubble.tiletype;
-            if (bsCheckGameOver()) return;
-            bsCluster = bsFindCluster(gridpos.x, gridpos.y, true, true, false);
-            if (bsCluster.length >= 3) {
-                bsGamestate = bsGamestates.removecluster;
-                return;
-            }
-        }
-
-        bsTurncounter++;
-        if (bsTurncounter >= 5) {
-            bsAddBubbles();
-            bsTurncounter = 0;
-            bsRowoffset = (bsRowoffset + 1) % 2;
-            if (bsCheckGameOver()) return;
-        }
-        bsNextBubble();
-        bsGamestate = bsGamestates.ready;
-    }
-
-    function bsShootBubble() {
-        bsPlayer.bubble.x = bsPlayer.x;
-        bsPlayer.bubble.y = bsPlayer.y;
-        bsPlayer.bubble.angle = bsPlayer.angle;
-        bsPlayer.bubble.tiletype = bsPlayer.tiletype;
-        bsGamestate = bsGamestates.shootbubble;
-    }
-
-    function bsCreateLevel() {
-        for (let j = 0; j < bsLevel.rows; j++) {
-            let randomtile = bsRandRange(0, bsBubblecolors - 1);
-            let count = 0;
-            for (let i = 0; i < bsLevel.columns; i++) {
-                if (count >= 2) {
-                    let newtile = bsRandRange(0, bsBubblecolors - 1);
-                    if (newtile == randomtile) newtile = (newtile + 1) % bsBubblecolors;
-                    randomtile = newtile;
-                    count = 0;
-                }
-                count++;
-                bsLevel.tiles[i][j].type = j < bsLevel.rows / 2 ? randomtile : -1;
-            }
-        }
-    }
-
-    function bsNewGame() {
-        bsScore = 0;
-        bsTurncounter = 0;
-        bsRowoffset = 0;
-        bsGamestate = bsGamestates.ready;
-        bsCreateLevel();
-        bsNextBubble();
-        bsNextBubble();
-    }
-
-    function bsUpdate(tframe) {
-        let dt = (tframe - bsLastframe) / 1000;
-        bsLastframe = tframe;
-        if (bsFpstime > 0.25) {
-            bsFps = Math.round(bsFramecount / bsFpstime);
-            bsFpstime = 0;
-            bsFramecount = 0;
-        }
-        bsFpstime += dt;
-        bsFramecount++;
-
-        if (bsGamestate == bsGamestates.shootbubble) {
-            bsPlayer.bubble.x += dt * bsPlayer.bubble.speed * Math.cos(bsDegToRad(bsPlayer.bubble.angle));
-            bsPlayer.bubble.y += dt * bsPlayer.bubble.speed * -Math.sin(bsDegToRad(bsPlayer.bubble.angle));
-            if (bsPlayer.bubble.x <= bsLevel.x) {
-                bsPlayer.bubble.angle = 180 - bsPlayer.bubble.angle;
-                bsPlayer.bubble.x = bsLevel.x;
-            } else if (bsPlayer.bubble.x + bsLevel.tilewidth >= bsLevel.x + bsLevel.width) {
-                bsPlayer.bubble.angle = 180 - bsPlayer.bubble.angle;
-                bsPlayer.bubble.x = bsLevel.x + bsLevel.width - bsLevel.tilewidth;
-            }
-            if (bsPlayer.bubble.y <= bsLevel.y) {
-                bsPlayer.bubble.y = bsLevel.y;
-                bsSnapBubble();
-                return;
-            }
-            for (let i = 0; i < bsLevel.columns; i++) {
-                for (let j = 0; j < bsLevel.rows; j++) {
-                    let tile = bsLevel.tiles[i][j];
-                    if (tile.type < 0) continue;
-                    let coord = bsGetTileCoordinate(i, j);
-                    if (bsCircleIntersection(bsPlayer.bubble.x + bsLevel.tilewidth/2, bsPlayer.bubble.y + bsLevel.tileheight/2, bsLevel.radius,
-                        coord.tilex + bsLevel.tilewidth/2, coord.tiley + bsLevel.tileheight/2, bsLevel.radius)) {
-                        bsSnapBubble();
-                        return;
-                    }
-                }
-            }
-        } else if (bsGamestate == bsGamestates.removecluster) {
-            if (bsAnimationstate == 0) {
-                bsResetRemoved();
-                for (let i = 0; i < bsCluster.length; i++) bsCluster[i].removed = true;
-                bsScore += bsCluster.length * 100;
-                if (bsCheckWin()) return;
-                bsFloatingclusters = bsFindFloatingClusters();
-                if (bsFloatingclusters.length > 0) {
-                    for (let i = 0; i < bsFloatingclusters.length; i++) {
-                        for (let j = 0; j < bsFloatingclusters[i].length; j++) {
-                            let tile = bsFloatingclusters[i][j];
-                            tile.shift = 0;
-                            tile.velocity = bsPlayer.bubble.dropspeed;
-                            bsScore += 100;
-                        }
-                    }
-                    if (bsCheckWin()) return;
-                }
-                bsAnimationstate = 1;
-            }
-            if (bsAnimationstate == 1) {
-                let tilesleft = false;
-                for (let i = 0; i < bsCluster.length; i++) {
-                    let tile = bsCluster[i];
-                    if (tile.type >= 0) {
-                        tilesleft = true;
-                        tile.alpha -= dt * 15;
-                        if (tile.alpha < 0) tile.alpha = 0;
-                        if (tile.alpha == 0) { tile.type = -1; tile.alpha = 1; }
-                    }
-                }
-                for (let i = 0; i < bsFloatingclusters.length; i++) {
-                    for (let j = 0; j < bsFloatingclusters[i].length; j++) {
-                        let tile = bsFloatingclusters[i][j];
-                        if (tile.type >= 0) {
-                            tilesleft = true;
-                            tile.velocity += dt * 700;
-                            tile.shift += dt * tile.velocity;
-                            tile.alpha -= dt * 8;
-                            if (tile.alpha < 0) tile.alpha = 0;
-                            if (tile.alpha == 0 || (tile.y * bsLevel.rowheight + tile.shift > (bsLevel.rows - 1) * bsLevel.rowheight + bsLevel.tileheight)) {
-                                tile.type = -1; tile.shift = 0; tile.alpha = 1;
-                            }
-                        }
-                    }
-                }
-                if (!tilesleft) {
-                    bsNextBubble();
-                    let tilefound = false;
-                    for (let i = 0; i < bsLevel.columns; i++)
-                        for (let j = 0; j < bsLevel.rows; j++)
-                            if (bsLevel.tiles[i][j].type != -1) { tilefound = true; break; }
-                    bsGamestate = tilefound ? bsGamestates.ready : bsGamestates.gameover;
-                    bsAnimationstate = 0;
-                }
-            }
-        }
-    }
-
-    function bsRenderTiles() {
-        for (let j = 0; j < bsLevel.rows; j++) {
-            for (let i = 0; i < bsLevel.columns; i++) {
-                let tile = bsLevel.tiles[i][j];
-                let coord = bsGetTileCoordinate(i, j);
-                if (tile.type >= 0) {
-                    bsCtx.save();
-                    bsCtx.globalAlpha = tile.alpha;
-                    bsDrawBubble(coord.tilex, coord.tiley + tile.shift, tile.type);
-                    bsCtx.restore();
-                }
-            }
-        }
-    }
-
-    function bsRenderPlayer() {
-        let centerx = bsPlayer.x + bsLevel.tilewidth/2;
-        let centery = bsPlayer.y + bsLevel.tileheight/2;
-        bsCtx.fillStyle = "#7a7a7a";
-        bsCtx.beginPath();
-        bsCtx.arc(centerx, centery, bsLevel.radius+12, 0, 2*Math.PI, false);
-        bsCtx.fill();
-        bsCtx.lineWidth = 2;
-        bsCtx.strokeStyle = "#8c8c8c";
-        bsCtx.stroke();
-        bsCtx.lineWidth = 2;
-        bsCtx.strokeStyle = "#0000ff";
-        bsCtx.beginPath();
-        bsCtx.moveTo(centerx, centery);
-        bsCtx.lineTo(centerx + 1.5*bsLevel.tilewidth * Math.cos(bsDegToRad(bsPlayer.angle)), centery - 1.5*bsLevel.tileheight * Math.sin(bsDegToRad(bsPlayer.angle)));
-        bsCtx.stroke();
-        bsDrawBubble(bsPlayer.nextbubble.x, bsPlayer.nextbubble.y, bsPlayer.nextbubble.tiletype);
-        if (bsPlayer.bubble.visible) bsDrawBubble(bsPlayer.bubble.x, bsPlayer.bubble.y, bsPlayer.bubble.tiletype);
-    }
-
-    function bsRender() {
-        bsCtx.fillStyle = "#e8eaec";
-        bsCtx.fillRect(0, 0, 628, 628);
-        bsCtx.fillStyle = "#8c8c8c";
-        bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4, bsLevel.width+8, bsLevel.height+4-bsLevel.tileheight/2);
-        bsRenderTiles();
-        bsCtx.fillStyle = "#656565";
-        bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4+bsLevel.height+4-bsLevel.tileheight/2, bsLevel.width+8, 2*bsLevel.tileheight+3);
-        bsCtx.fillStyle = "#ffffff";
-        bsCtx.font = "14px Verdana";
-        bsCtx.fillText("Score: " + bsScore + " / " + bsScoreToWin, bsLevel.x + bsLevel.width - 180, bsLevel.y+bsLevel.height+bsLevel.tileheight-bsLevel.tileheight/2+15);
-        bsRenderPlayer();
-        if (bsGamestate == bsGamestates.gameover) {
-            bsCtx.fillStyle = "rgba(0,0,0,0.8)";
-            bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4, bsLevel.width+8, bsLevel.height+2*bsLevel.tileheight+8-bsLevel.tileheight/2);
-            bsCtx.fillStyle = "#ffffff";
-            bsCtx.font = "20px Verdana";
-            bsCtx.fillText("Game Over!", bsLevel.x+bsLevel.width/2-60, bsLevel.y+bsLevel.height/2);
-            bsCtx.fillText("Click to restart", bsLevel.x+bsLevel.width/2-70, bsLevel.y+bsLevel.height/2+30);
-        }
-        if (bsGamestate == bsGamestates.won) {
-            bsCtx.fillStyle = "rgba(0,0,0,0.8)";
-            bsCtx.fillRect(bsLevel.x-4, bsLevel.y-4, bsLevel.width+8, bsLevel.height+2*bsLevel.tileheight+8-bsLevel.tileheight/2);
-            bsCtx.fillStyle = "#ffdd00";
-            bsCtx.font = "20px Verdana";
-            bsCtx.fillText("Победа!", bsLevel.x+bsLevel.width/2-50, bsLevel.y+bsLevel.height/2-10);
-            bsCtx.fillText("Нажми ENTER", bsLevel.x+bsLevel.width/2-70, bsLevel.y+bsLevel.height/2+25);
-        }
-    }
-
-    function bsInit() {
-        bsCanvas = document.createElement('canvas');
-        bsCanvas.width = 628;
-        bsCanvas.height = 628;
-        bsCtx = bsCanvas.getContext('2d');
-        miniGameActiveEl.innerHTML = '';
-        miniGameActiveEl.appendChild(bsCanvas);
-        bsCanvas.style.position = 'absolute';
-        bsCanvas.style.top = '50%';
-        bsCanvas.style.left = '50%';
-        bsCanvas.style.transform = 'translate(-50%, -50%)';
-
-        let bsImages = bsLoadImages(["bubble-sprites.png"]);
-        bsBubbleimage = bsImages[0];
-
-        bsCanvas.addEventListener('mousemove', e => {
-            let rect = bsCanvas.getBoundingClientRect();
-            let mx = (e.clientX - rect.left) / rect.width * 628;
-            let my = (e.clientY - rect.top) / rect.height * 628;
-            let mouseangle = bsRadToDeg(Math.atan2((bsPlayer.y+bsLevel.tileheight/2) - my, mx - (bsPlayer.x+bsLevel.tilewidth/2)));
-            if (mouseangle < 0) mouseangle = 180 + (180 + mouseangle);
-            let lbound = 8, ubound = 172;
-            if (mouseangle > 90 && mouseangle < 270) { if (mouseangle > ubound) mouseangle = ubound; }
-            else { if (mouseangle < lbound || mouseangle >= 270) mouseangle = lbound; }
-            bsPlayer.angle = mouseangle;
+    function renderMemoryGrid() {
+        const grid = document.getElementById('memory-grid'); grid.innerHTML = '';
+        memoryCards.forEach((card, index) => {
+            const cardElement = document.createElement('div'); cardElement.className = 'memory-card';
+            if (card.isFlipped) cardElement.classList.add('flipped');
+            if (card.isMatched) cardElement.classList.add('matched');
+            const content = document.createElement('div'); content.className = 'card-content-m';
+            const span = document.createElement('span'); span.textContent = card.symbol; content.appendChild(span);
+            cardElement.appendChild(content);
+            const back = document.createElement('div'); back.className = 'card-back-m'; back.textContent = '❓';
+            cardElement.appendChild(back);
+            cardElement.dataset.index = index;
+            cardElement.addEventListener('click', () => onMemoryCardClick(index));
+            grid.appendChild(cardElement);
         });
-
-        bsCanvas.addEventListener('mousedown', () => {
-            if (bsGamestate == bsGamestates.ready) bsShootBubble();
-            else if (bsGamestate == bsGamestates.gameover) bsNewGame();
-        });
-
-        for (let i = 0; i < bsLevel.columns; i++) {
-            bsLevel.tiles[i] = [];
-            for (let j = 0; j < bsLevel.rows; j++)
-                bsLevel.tiles[i][j] = new BsTile(i, j, 0, 0);
-        }
-        bsLevel.width = bsLevel.columns * bsLevel.tilewidth + bsLevel.tilewidth/2;
-        bsLevel.height = (bsLevel.rows-1) * bsLevel.rowheight + bsLevel.tileheight;
-        bsPlayer.x = bsLevel.x + bsLevel.width/2 - bsLevel.tilewidth/2;
-        bsPlayer.y = bsLevel.y + bsLevel.height;
-        bsPlayer.angle = 90;
-        bsPlayer.tiletype = 0;
-        bsPlayer.nextbubble.x = bsPlayer.x - 2 * bsLevel.tilewidth;
-        bsPlayer.nextbubble.y = bsPlayer.y;
-
-        bsNewGame();
-        bsLastframe = performance.now();
-        bsInitialized = true;
     }
 
-    function bsLoop(tframe) {
-        if (!bsRunning) return;
-        requestAnimationFrame(bsLoop);
-        if (!bsInitialized) {
-            bsCtx.fillStyle = "#e8eaec";
-            bsCtx.fillRect(0, 0, 628, 628);
-            let pct = bsLoadcount/bsLoadtotal;
-            bsCtx.fillStyle = "#ff8080";
-            bsCtx.fillRect(18, 580, pct*592, 20);
-            bsCtx.fillStyle = "#000";
-            bsCtx.font = "12px Verdana";
-            bsCtx.fillText("Loading...", 18, 575);
-            if (bsPreloaded) setTimeout(() => bsInitialized = true, 500);
-        } else {
-            bsUpdate(tframe);
-            bsRender();
+    function updateMemoryCardElement(index) {
+        const cardElement = document.getElementById('memory-grid').children[index];
+        if (!cardElement) return;
+        const card = memoryCards[index];
+        cardElement.classList.toggle('flipped', card.isFlipped);
+        cardElement.classList.toggle('matched', card.isMatched);
+    }
+
+    function onMemoryCardClick(index) {
+        if (memoryLockBoard) return;
+        const card = memoryCards[index];
+        if (card.isFlipped || card.isMatched || memoryFlippedCards.length >= 2) return;
+        card.isFlipped = true; updateMemoryCardElement(index); memoryFlippedCards.push(index);
+        if (memoryFlippedCards.length === 2) {
+            memoryMoves++; document.getElementById('memory-moves-counter').textContent = memoryMoves;
+            const idx1 = memoryFlippedCards[0], idx2 = memoryFlippedCards[1];
+            const card1 = memoryCards[idx1], card2 = memoryCards[idx2];
+            if (card1.symbol === card2.symbol) {
+                card1.isMatched = true; card2.isMatched = true; card1.isFlipped = false; card2.isFlipped = false;
+                updateMemoryCardElement(idx1); updateMemoryCardElement(idx2);
+                memoryMatchedPairs++; document.getElementById('memory-pairs-matched').textContent = memoryMatchedPairs;
+                memoryFlippedCards = [];
+                if (memoryMatchedPairs === CARD_SYMBOLS.length) {
+                    document.getElementById('memory-message-area').textContent = '🎉 Отлично! Ты всё запомнила! 🎉';
+                    setTimeout(() => { stopMemoryGame(); sonkaStep = 2; sonkaWinDialogueEl.classList.add('show'); }, 1500);
+                }
+            } else {
+                memoryLockBoard = true;
+                memoryTimeoutId = setTimeout(() => {
+                    card1.isFlipped = false; card2.isFlipped = false;
+                    updateMemoryCardElement(idx1); updateMemoryCardElement(idx2);
+                    memoryFlippedCards = []; memoryLockBoard = false; memoryTimeoutId = null;
+                }, 800);
+            }
         }
     }
 
-    function startBubbleShooter() {
-        mgActiveGame = 'bubble';
-        stopMiniGame();
-        miniGameActiveEl.classList.add('show');
-        miniGameActiveEl.style.width = '628px';
-        miniGameActiveEl.style.height = '628px';
-        miniGameActiveEl.style.left = '50%';
-        miniGameActiveEl.style.top = '50%';
-        miniGameActiveEl.style.transform = 'translate(-50%, -50%)';
-        miniGameActiveEl.style.background = '#e8eaec';
+    function startMemoryGame() { initMemoryGame(); memoryGameContainer.classList.add('show'); }
+    function stopMemoryGame() {
+        if (memoryTimeoutId) { clearTimeout(memoryTimeoutId); memoryTimeoutId = null; }
+        memoryGameContainer.classList.remove('show');
+        document.getElementById('memory-grid').innerHTML = '';
+        memoryCards = []; memoryFlippedCards = []; memoryMatchedPairs = 0; memoryMoves = 0; memoryLockBoard = false;
+    }
 
-        bsRunning = true;
-        if (!bsInitialized) {
-            bsInit();
-        } else {
-            bsNewGame();
-            bsLastframe = performance.now();
+    document.getElementById('memory-reset-btn').addEventListener('click', () => { initMemoryGame(); });
+
+    sonkaBtnEl.addEventListener('click', () => { sonkaDialogueEl.classList.remove('show'); sonkaStep = 1; inputBlocked = true; startMemoryGame(); });
+    sonkaWinBtnEl.addEventListener('click', () => { sonkaWinDialogueEl.classList.remove('show'); doTransition(() => { currentLevel = 7; levelLabelEl.textContent = '🏫 Уровень 7'; player.x = 50; player.y = 450; dashkaStep = 0; }); });
+
+    // ─── МИНИ-ИГРА ДАШКИ: СУДОКУ ──────────────────────────────────────
+    let sudokuRunning = false;
+    let sudokuBoard = [];
+    let sudokuSolution = [];
+    let sudokuSelected = null;
+
+    function generateSudoku() {
+        const sol = [
+            [5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],
+            [8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],
+            [9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]
+        ];
+        sudokuSolution = sol.map(r => [...r]);
+        sudokuBoard = sol.map(r => [...r]);
+        let removed = 0;
+        while (removed < 45) {
+            const r = Math.floor(Math.random() * 9), c = Math.floor(Math.random() * 9);
+            if (sudokuBoard[r][c] !== 0) { sudokuBoard[r][c] = 0; removed++; }
         }
-        requestAnimationFrame(bsLoop);
     }
 
-    function stopBubbleShooter() {
-        bsRunning = false;
-        miniGameActiveEl.classList.remove('show');
-        miniGameActiveEl.innerHTML = '';
+    function drawSudoku() {
+        sudokuCtx.fillStyle = '#f5f0e8'; sudokuCtx.fillRect(0, 0, 450, 450);
+        const o = 25, cs = 44;
+        for (let i = 0; i <= 9; i++) {
+            const w = i % 3 === 0 ? 3 : 1;
+            sudokuCtx.lineWidth = w; sudokuCtx.strokeStyle = '#333';
+            sudokuCtx.beginPath(); sudokuCtx.moveTo(o + i * cs, o); sudokuCtx.lineTo(o + i * cs, o + 9 * cs); sudokuCtx.stroke();
+            sudokuCtx.beginPath(); sudokuCtx.moveTo(o, o + i * cs); sudokuCtx.lineTo(o + 9 * cs, o + i * cs); sudokuCtx.stroke();
+        }
+        sudokuCtx.font = '22px Courier New'; sudokuCtx.textAlign = 'center'; sudokuCtx.textBaseline = 'middle';
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                if (sudokuBoard[r][c] !== 0) {
+                    sudokuCtx.fillStyle = '#2c3e50';
+                    sudokuCtx.fillText(sudokuBoard[r][c], o + c * cs + cs / 2, o + r * cs + cs / 2);
+                }
+            }
+        }
+        if (sudokuSelected) {
+            const { r, c } = sudokuSelected;
+            sudokuCtx.fillStyle = 'rgba(46, 204, 113, 0.4)';
+            sudokuCtx.fillRect(o + c * cs + 2, o + r * cs + 2, cs - 4, cs - 4);
+        }
     }
+
+    function sudokuCanvasClick(e) {
+        if (!sudokuRunning) return;
+        const rect = sudokuCanvas.getBoundingClientRect();
+        const scaleX = 450 / rect.width, scaleY = 450 / rect.height;
+        const mx = (e.clientX - rect.left) * scaleX, my = (e.clientY - rect.top) * scaleY;
+        const o = 25, cs = 44;
+        const c = Math.floor((mx - o) / cs), r = Math.floor((my - o) / cs);
+        if (r >= 0 && r < 9 && c >= 0 && c < 9 && sudokuBoard[r][c] === 0) {
+            sudokuSelected = { r, c }; drawSudoku();
+        }
+    }
+
+    function checkSudokuWin() {
+        for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (sudokuBoard[r][c] !== sudokuSolution[r][c]) return;
+        sudokuRunning = false;
+        sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
+        sudokuContainer.classList.remove('show');
+        dashkaWinDialogueEl.classList.add('show');
+    }
+
+    function startSudoku() {
+        generateSudoku(); sudokuSelected = null; sudokuRunning = true;
+        drawSudoku(); sudokuContainer.classList.add('show');
+        sudokuCanvas.addEventListener('click', sudokuCanvasClick);
+    }
+
+    function stopSudoku() {
+        sudokuRunning = false;
+        sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
+        sudokuContainer.classList.remove('show');
+    }
+
+    dashkaBtnEl.addEventListener('click', () => { dashkaDialogueEl.classList.remove('show'); dashkaStep = 1; inputBlocked = true; startSudoku(); });
+    dashkaWinBtnEl.addEventListener('click', () => { dashkaWinDialogueEl.classList.remove('show'); });
 
     // ─── УТИЛИТЫ ────────────────────────────────────────────────────
-    function hit(a, b) {
-        return a.x < b.x+b.width && a.x+a.width > b.x &&
-               a.y < b.y+b.height && a.y+a.height > b.y;
-    }
-    function canWalk(x, y, zones) {
-        for (let z of zones)
-            if (x>=z.x && x<=z.x+z.width && y>=z.y && y<=z.y+z.height) return true;
-        return false;
-    }
-    function imgOk(img) { return img.complete && img.naturalWidth !== 0; }
-
-    function showBubble(el, text, charX, charY, charW) {
-        el.textContent = text;
-        el.classList.add('show');
-        requestAnimationFrame(() => {
-            const bw = el.offsetWidth;
-            const bh = el.offsetHeight;
-            el.style.left = (charX + charW/2 - bw/2) + 'px';
-            el.style.top  = (charY - bh - 14) + 'px';
-        });
-    }
-    function hideBubble(el) { el.classList.remove('show'); }
+    function hit(a,b){return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;}
+    function canWalk(x,y,zones){for(let z of zones)if(x>=z.x&&x<=z.x+z.width&&y>=z.y&&y<=z.y+z.height)return true;return false;}
+    function imgOk(img){return img.complete&&img.naturalWidth!==0;}
+    function showBubble(el,text,cx,cy,cw){el.textContent=text;el.classList.add('show');requestAnimationFrame(()=>{const bw=el.offsetWidth,bh=el.offsetHeight;el.style.left=(cx+cw/2-bw/2)+'px';el.style.top=(cy-bh-14)+'px';});}
+    function hideBubble(el){el.classList.remove('show');}
 
     function resetAllStates() {
-        inputBlocked = false;
-        stopMiniGame();
-        stopBubbleShooter();
-
-        pizzaChoiceEl.classList.remove('show');
-        pizzaFullscreenEl.classList.remove('show');
-        fullscreenMsgEl.classList.remove('show');
-        guardDialogueEl.classList.remove('show');
-        varyaDialogueEl.classList.remove('show');
-        varyaLoseDialogueEl.classList.remove('show');
-        varyaWinDialogueEl.classList.remove('show');
-        dialogueEl.classList.remove('show');
-        hideBubble(mishaBubbleEl);
-        hideBubble(guardBubbleEl);
-        hideBubble(varyaBubbleEl);
-        bigHeartEl.classList.remove('show');
-
-        mishaStep = 99;
-        guardStep = 0;
-        guardBubbleIndex = 0;
-        if (guardBubbleTimer) clearTimeout(guardBubbleTimer);
-        varyaStep = 0;
-        varyaDialogueIndex = 0;
-        alenHasPizza = false;
+        inputBlocked=false;stopMiniGame();stopBubbleShooter();stopMemoryGame();stopSudoku();
+        pizzaChoiceEl.classList.remove('show');pizzaFullscreenEl.classList.remove('show');fullscreenMsgEl.classList.remove('show');
+        guardDialogueEl.classList.remove('show');varyaDialogueEl.classList.remove('show');varyaLoseDialogueEl.classList.remove('show');
+        varyaWinDialogueEl.classList.remove('show');sonkaDialogueEl.classList.remove('show');sonkaWinDialogueEl.classList.remove('show');
+        dashkaDialogueEl.classList.remove('show');dashkaWinDialogueEl.classList.remove('show');
+        dialogueEl.classList.remove('show');hideBubble(mishaBubbleEl);hideBubble(guardBubbleEl);hideBubble(varyaBubbleEl);
+        hideBubble(sonkaBubbleEl);hideBubble(dashkaBubbleEl);bigHeartEl.classList.remove('show');
+        mishaStep=99;guardStep=0;guardBubbleIndex=0;if(guardBubbleTimer)clearTimeout(guardBubbleTimer);
+        varyaStep=0;varyaDialogueIndex=0;sonkaStep=0;dashkaStep=0;alenHasPizza=false;
     }
 
     // ─── РИСОВАНИЕ ──────────────────────────────────────────────────
-    function drawLevel1() {
-        if (imgOk(images.room)) ctx.drawImage(images.room, 0, 0, 800, 600);
-        else { ctx.fillStyle='#ffe4ec'; ctx.fillRect(0,0,800,600); }
-        if (imgOk(images.cat)) ctx.drawImage(images.cat, posL1.cat.x, posL1.cat.y, 50, 50);
-        else { ctx.fillStyle='#ffa500'; ctx.fillRect(posL1.cat.x, posL1.cat.y, 50, 50); }
-        if (imgOk(images.chinchilla)) ctx.drawImage(images.chinchilla, posL1.chinchilla.x, posL1.chinchilla.y, 45, 45);
-        else { ctx.fillStyle='#808080'; ctx.fillRect(posL1.chinchilla.x, posL1.chinchilla.y, 45, 45); }
-    }
-
-    function drawLevel2() {
-        if (imgOk(images.street)) ctx.drawImage(images.street, 0, 0, 800, 600);
-        else { ctx.fillStyle='#c8b89a'; ctx.fillRect(0,0,800,600); }
-        if (imgOk(images.misha)) ctx.drawImage(images.misha, mishaPos.x, mishaPos.y, 65, 110);
-        else { ctx.fillStyle='#6a8a9a'; ctx.fillRect(mishaPos.x, mishaPos.y, 65, 110); }
-    }
-
-    function drawLevel3() {
-        if (imgOk(images.liceum)) ctx.drawImage(images.liceum, 0, 0, 800, 600);
-        else { ctx.fillStyle='#e8e0d0'; ctx.fillRect(0,0,800,600); }
-        if (imgOk(images.guard)) {
-            ctx.drawImage(images.guard, guardPos.x, guardPos.y, 60, 110);
-        } else {
-            ctx.fillStyle='#2c3e50'; ctx.fillRect(guardPos.x, guardPos.y, 55, 100);
-            ctx.fillStyle='#e8b4a0'; ctx.fillRect(guardPos.x+10, guardPos.y, 35, 35);
-            ctx.font='20px serif'; ctx.textAlign='center';
-            ctx.fillText('🚨', guardPos.x+27, guardPos.y-8);
-            ctx.textAlign='left';
-        }
-    }
-
-    function drawLevel4() {
-        if (imgOk(images.koridor)) ctx.drawImage(images.koridor, 0, 0, 800, 600);
-        else { ctx.fillStyle = '#d4c8b0'; ctx.fillRect(0, 0, 800, 600); }
-        if (imgOk(images.varya)) ctx.drawImage(images.varya, varyaPos.x, varyaPos.y, 60, 110);
-        else {
-            ctx.fillStyle = '#c8a0d0';
-            ctx.fillRect(varyaPos.x, varyaPos.y, 55, 100);
-            ctx.font = '20px serif'; ctx.textAlign = 'center';
-            ctx.fillText('👩', varyaPos.x + 27, varyaPos.y - 8);
-            ctx.textAlign = 'left';
-        }
-    }
-
-    function drawLevel6() {
-        if (imgOk(images.koridor2)) ctx.drawImage(images.koridor2, 0, 0, 800, 600);
-        else { ctx.fillStyle = '#c0d0c0'; ctx.fillRect(0, 0, 800, 600); }
-        if (imgOk(images.dashka)) ctx.drawImage(images.dashka, dashkaPos.x, dashkaPos.y, 60, 110);
-        else {
-            ctx.fillStyle = '#f0c0a0';
-            ctx.fillRect(dashkaPos.x, dashkaPos.y, 55, 100);
-            ctx.font = '20px serif'; ctx.textAlign = 'center';
-            ctx.fillText('👧', dashkaPos.x + 27, dashkaPos.y - 8);
-            ctx.textAlign = 'left';
-        }
-        if (imgOk(images.sonka)) ctx.drawImage(images.sonka, sonkaPos.x, sonkaPos.y, 60, 110);
-        else {
-            ctx.fillStyle = '#a0c0f0';
-            ctx.fillRect(sonkaPos.x, sonkaPos.y, 55, 100);
-            ctx.font = '20px serif'; ctx.textAlign = 'center';
-            ctx.fillText('👧', sonkaPos.x + 27, sonkaPos.y - 8);
-            ctx.textAlign = 'left';
-        }
-    }
-
-    function drawPlayer() {
-        if (imgOk(images.alena)) ctx.drawImage(images.alena, player.x, player.y, player.width, player.height);
-        else { ctx.fillStyle='#ffb6c1'; ctx.fillRect(player.x, player.y, player.width, player.height); }
-
-        if (alenHasPizza) {
-            ctx.font = '28px serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('🍕', player.x + player.width + 8, player.y + player.height * 0.65);
-            ctx.textAlign = 'left';
-        }
-    }
+    function drawLevel1(){if(imgOk(images.room))ctx.drawImage(images.room,0,0,800,600);else{ctx.fillStyle='#ffe4ec';ctx.fillRect(0,0,800,600);}if(imgOk(images.cat))ctx.drawImage(images.cat,posL1.cat.x,posL1.cat.y,50,50);else{ctx.fillStyle='#ffa500';ctx.fillRect(posL1.cat.x,posL1.cat.y,50,50);}if(imgOk(images.chinchilla))ctx.drawImage(images.chinchilla,posL1.chinchilla.x,posL1.chinchilla.y,45,45);else{ctx.fillStyle='#808080';ctx.fillRect(posL1.chinchilla.x,posL1.chinchilla.y,45,45);}}
+    function drawLevel2(){if(imgOk(images.street))ctx.drawImage(images.street,0,0,800,600);else{ctx.fillStyle='#c8b89a';ctx.fillRect(0,0,800,600);}if(imgOk(images.misha))ctx.drawImage(images.misha,mishaPos.x,mishaPos.y,150,200);else{ctx.fillStyle='#6a8a9a';ctx.fillRect(mishaPos.x,mishaPos.y,65,110);}}
+    function drawLevel3(){if(imgOk(images.liceum))ctx.drawImage(images.liceum,0,0,800,600);else{ctx.fillStyle='#e8e0d0';ctx.fillRect(0,0,800,600);}if(imgOk(images.guard)){ctx.drawImage(images.guard,guardPos.x,guardPos.y,120,200);}else{ctx.fillStyle='#2c3e50';ctx.fillRect(guardPos.x,guardPos.y,55,100);ctx.fillStyle='#e8b4a0';ctx.fillRect(guardPos.x+10,guardPos.y,35,35);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('🚨',guardPos.x+27,guardPos.y-8);ctx.textAlign='left';}}
+    function drawLevel4(){if(imgOk(images.koridor))ctx.drawImage(images.koridor,0,0,800,600);else{ctx.fillStyle='#d4c8b0';ctx.fillRect(0,0,800,600);}if(imgOk(images.varya))ctx.drawImage(images.varya,varyaPos.x,varyaPos.y,180,200);else{ctx.fillStyle='#c8a0d0';ctx.fillRect(varyaPos.x,varyaPos.y,55,100);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('👩',varyaPos.x+27,varyaPos.y-8);ctx.textAlign='left';}}
+    function drawLevel6(){if(imgOk(images.koridor2))ctx.drawImage(images.koridor2,0,0,800,600);else{ctx.fillStyle='#c0d0c0';ctx.fillRect(0,0,800,600);}if(imgOk(images.varya))ctx.drawImage(images.varya,varyaPosL6.x,varyaPosL6.y,180,200);else{ctx.fillStyle='#c8a0d0';ctx.fillRect(varyaPosL6.x,varyaPosL6.y,55,100);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('👩',varyaPosL6.x+27,varyaPosL6.y-8);ctx.textAlign='left';}if(imgOk(images.sonka))ctx.drawImage(images.sonka,sonkaPos.x,sonkaPos.y,180,200);else{ctx.fillStyle='#a0c0f0';ctx.fillRect(sonkaPos.x,sonkaPos.y,55,100);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('👧',sonkaPos.x+27,sonkaPos.y-8);ctx.textAlign='left';}}
+    function drawLevel7(){if(imgOk(images.kabinet))ctx.drawImage(images.kabinet,0,0,800,600);else{ctx.fillStyle='#e0d8c0';ctx.fillRect(0,0,800,600);}if(imgOk(images.dashka))ctx.drawImage(images.dashka,dashkaPosL7.x,dashkaPosL7.y,180,200);else{ctx.fillStyle='#f0c0a0';ctx.fillRect(dashkaPosL7.x,dashkaPosL7.y,55,100);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('👧',dashkaPosL7.x+27,dashkaPosL7.y-8);ctx.textAlign='left';}if(imgOk(images.sonka))ctx.drawImage(images.sonka,sonkaPosL7.x,sonkaPosL7.y,180,200);else{ctx.fillStyle='#a0c0f0';ctx.fillRect(sonkaPosL7.x,sonkaPosL7.y,55,100);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('👧',sonkaPosL7.x+27,sonkaPosL7.y-8);ctx.textAlign='left';}if(imgOk(images.varya))ctx.drawImage(images.varya,varyaPosL7.x,varyaPosL7.y,180,200);else{ctx.fillStyle='#c8a0d0';ctx.fillRect(varyaPosL7.x,varyaPosL7.y,55,100);ctx.font='20px serif';ctx.textAlign='center';ctx.fillText('👩',varyaPosL7.x+27,varyaPosL7.y-8);ctx.textAlign='left';}}
+    function drawPlayer(){if(imgOk(images.alena))ctx.drawImage(images.alena,player.x,player.y,player.width,player.height);else{ctx.fillStyle='#ffb6c1';ctx.fillRect(player.x,player.y,player.width,player.height);}if(alenHasPizza){ctx.font='28px serif';ctx.textAlign='center';ctx.fillText('🍕',player.x+player.width+8,player.y+player.height*0.65);ctx.textAlign='left';}}
 
     // ─── АНИМАЦИИ КОРМЁЖКИ ──────────────────────────────────────────
-    function spawnFloating(emoji, left, top, cls) {
-        const el = document.createElement('div');
-        el.className = cls; el.textContent = emoji;
-        el.style.left = left; el.style.top = top;
-        document.getElementById('gameContainer').appendChild(el);
-        setTimeout(() => el.remove(), 1600);
-    }
-    function animateCatFeed() {
-        inputBlocked = true;
-        for (let i=0;i<3;i++) setTimeout(()=>spawnFloating('🍗','590px','340px','seed'), i*200);
-        setTimeout(()=>{ for(let i=0;i<5;i++) setTimeout(()=>spawnFloating('❤️',(560+Math.random()*60)+'px','320px','heart'),i*200); },800);
-        tasksCompleted.cat = true;
-        setTimeout(()=>{ inputBlocked=false; },2000);
-    }
-    function animateChinchillaFeed() {
-        inputBlocked = true;
-        for (let i=0;i<3;i++) setTimeout(()=>spawnFloating('🌻','105px','380px','seed'), i*200);
-        setTimeout(()=>{ for(let i=0;i<5;i++) setTimeout(()=>spawnFloating('💕',(80+Math.random()*50)+'px','350px','heart'),i*200); },800);
-        tasksCompleted.chinchilla = true;
-        setTimeout(()=>{ inputBlocked=false; },2000);
-    }
-
-    function doTransition(callback) {
-        inputBlocked = true;
-        levelTransEl.classList.add('fade-out');
-        setTimeout(()=>{ callback(); levelTransEl.classList.remove('fade-out'); setTimeout(()=>{ inputBlocked=false; },100); }, 700);
-    }
+    function spawnFloating(emoji,left,top,cls){const el=document.createElement('div');el.className=cls;el.textContent=emoji;el.style.left=left;el.style.top=top;document.getElementById('gameContainer').appendChild(el);setTimeout(()=>el.remove(),1600);}
+    function animateCatFeed(){inputBlocked=true;for(let i=0;i<3;i++)setTimeout(()=>spawnFloating('🍗','590px','340px','seed'),i*200);setTimeout(()=>{for(let i=0;i<5;i++)setTimeout(()=>spawnFloating('❤️',(560+Math.random()*60)+'px','320px','heart'),i*200);},800);tasksCompleted.cat=true;setTimeout(()=>{inputBlocked=false;},2000);}
+    function animateChinchillaFeed(){inputBlocked=true;for(let i=0;i<3;i++)setTimeout(()=>spawnFloating('🌻','105px','380px','seed'),i*200);setTimeout(()=>{for(let i=0;i<5;i++)setTimeout(()=>spawnFloating('💕',(80+Math.random()*50)+'px','350px','heart'),i*200);},800);tasksCompleted.chinchilla=true;setTimeout(()=>{inputBlocked=false;},2000);}
+    function doTransition(callback){inputBlocked=true;levelTransEl.classList.add('fade-out');setTimeout(()=>{callback();levelTransEl.classList.remove('fade-out');setTimeout(()=>{inputBlocked=false;},100);},700);}
 
     // ─── ДИАЛОГ С МИШЕЙ ─────────────────────────────────────────────
-    function mishaInteract() {
-        if (mishaStep === 0) {
-            mishaStep = 1;
-            inputBlocked = true;
-            showBubble(mishaBubbleEl, 'Ура, Алёнка, с днём рождения тебя!! 🎉', mishaPos.x, mishaPos.y, 65);
-            dialogueEl.classList.remove('show');
-            setTimeout(()=>{
-                dialogueEl.textContent = '[ ENTER — продолжить ]';
-                dialogueEl.classList.add('show');
-                inputBlocked = false;
-            }, 400);
-        }
-    }
-
-    function mishaEnterPressed() {
-        if (mishaStep === 1) {
-            mishaStep = 2;
-            inputBlocked = true;
-            hideBubble(mishaBubbleEl);
-            dialogueEl.classList.remove('show');
-            bigHeartEl.classList.remove('show');
-            void bigHeartEl.offsetWidth;
-            bigHeartEl.classList.add('show');
-            setTimeout(()=>{
-                bigHeartEl.classList.remove('show');
-                mishaStep = 3;
-                showBubble(mishaBubbleEl, 'Я приготовил тебе день-рожденскую питсу! 🍕', mishaPos.x, mishaPos.y, 65);
-                dialogueEl.textContent = '[ ENTER — продолжить ]';
-                dialogueEl.classList.add('show');
-                inputBlocked = false;
-            }, 2600);
-            return;
-        }
-        if (mishaStep === 3) {
-            mishaStep = 4;
-            inputBlocked = true;
-            hideBubble(mishaBubbleEl);
-            dialogueEl.classList.remove('show');
-            alenHasPizza = true;
-            setTimeout(()=>{ pizzaChoiceEl.classList.add('show'); }, 400);
-            return;
-        }
-        if (mishaStep === 6) {
-            pizzaFullscreenEl.classList.remove('show');
-            doTransition(()=>{
-                currentLevel = 3;
-                levelLabelEl.textContent = '🌅 Уровень 3';
-                player.x = 100; player.y = 450;
-                mishaStep = 99;
-            });
-        }
-    }
-
-    document.getElementById('btnEat').addEventListener('click', ()=>{
-        pizzaChoiceEl.classList.remove('show');
-        mishaStep = 5;
-        alenHasPizza = false;
-        for (let i=0;i<6;i++) {
-            setTimeout(()=> spawnFloating(
-                ['🍕','✨','😋','💛'][Math.floor(Math.random()*4)],
-                (player.x + Math.random()*80) + 'px',
-                (player.y + Math.random()*60 + 30) + 'px',
-                'heart'
-            ), i*150);
-        }
-        setTimeout(()=>{
-            mishaStep = 6;
-            pizzaFullscreenEl.classList.add('show');
-            inputBlocked = false;
-        }, 800);
-    });
-
-    document.getElementById('btnSkip').addEventListener('click', ()=>{
-        pizzaChoiceEl.classList.remove('show');
-        for (let i=0;i<5;i++) {
-            setTimeout(()=>{
-                const el = document.createElement('div');
-                el.className = 'cry-emoji';
-                el.textContent = ['😢','😭','💔'][Math.floor(Math.random()*3)];
-                el.style.left = (mishaPos.x + Math.random()*65) + 'px';
-                el.style.top  = (mishaPos.y - 10) + 'px';
-                document.getElementById('gameContainer').appendChild(el);
-                setTimeout(()=>el.remove(), 1500);
-            }, i*200);
-        }
-        setTimeout(()=>{ pizzaChoiceEl.classList.add('show'); }, 1800);
-    });
+    function mishaInteract(){if(mishaStep===0){mishaStep=1;inputBlocked=true;showBubble(mishaBubbleEl,'Ура, Алёнка, с днём рождения тебя!! 🎉',mishaPos.x,mishaPos.y,65);dialogueEl.classList.remove('show');setTimeout(()=>{dialogueEl.textContent='[ ENTER — продолжить ]';dialogueEl.classList.add('show');inputBlocked=false;},400);}}
+    function mishaEnterPressed(){if(mishaStep===1){mishaStep=2;inputBlocked=true;hideBubble(mishaBubbleEl);dialogueEl.classList.remove('show');bigHeartEl.classList.remove('show');void bigHeartEl.offsetWidth;bigHeartEl.classList.add('show');setTimeout(()=>{bigHeartEl.classList.remove('show');mishaStep=3;showBubble(mishaBubbleEl,'Я приготовил тебе день-рожденскую питсу! 🍕',mishaPos.x,mishaPos.y,65);dialogueEl.textContent='[ ENTER — продолжить ]';dialogueEl.classList.add('show');inputBlocked=false;},2600);return;}if(mishaStep===3){mishaStep=4;inputBlocked=true;hideBubble(mishaBubbleEl);dialogueEl.classList.remove('show');alenHasPizza=true;setTimeout(()=>{pizzaChoiceEl.classList.add('show');},400);return;}if(mishaStep===6){pizzaFullscreenEl.classList.remove('show');doTransition(()=>{currentLevel=3;levelLabelEl.textContent='🌅 Уровень 3';player.x=100;player.y=450;mishaStep=99;});}}
+    document.getElementById('btnEat').addEventListener('click',()=>{pizzaChoiceEl.classList.remove('show');mishaStep=5;alenHasPizza=false;for(let i=0;i<6;i++)setTimeout(()=>spawnFloating(['🍕','✨','😋','💛'][Math.floor(Math.random()*4)],(player.x+Math.random()*80)+'px',(player.y+Math.random()*60+30)+'px','heart'),i*150);setTimeout(()=>{mishaStep=6;pizzaFullscreenEl.classList.add('show');inputBlocked=false;},800);});
+    document.getElementById('btnSkip').addEventListener('click',()=>{pizzaChoiceEl.classList.remove('show');for(let i=0;i<5;i++)setTimeout(()=>{const el=document.createElement('div');el.className='cry-emoji';el.textContent=['😢','😭','💔'][Math.floor(Math.random()*3)];el.style.left=(mishaPos.x+Math.random()*65)+'px';el.style.top=(mishaPos.y-10)+'px';document.getElementById('gameContainer').appendChild(el);setTimeout(()=>el.remove(),1500);},i*200);setTimeout(()=>{pizzaChoiceEl.classList.add('show');},1800);});
 
     // ─── ДИАЛОГ С ОХРАННИКОМ ────────────────────────────────────────
-    function guardInteract() {
-        if (guardStep !== 0) return;
-        guardStep = 1;
-        inputBlocked = true;
-        dialogueEl.classList.remove('show');
-        guardBubbleIndex = 0;
-        showNextAngryBubble();
-    }
-
-    function showNextAngryBubble() {
-        if (guardBubbleIndex < guardAngryLines.length) {
-            showBubble(guardBubbleEl, guardAngryLines[guardBubbleIndex], guardPos.x, guardPos.y, 60);
-            guardBubbleIndex++;
-            guardBubbleTimer = setTimeout(() => {
-                hideBubble(guardBubbleEl);
-                setTimeout(showNextAngryBubble, 300);
-            }, 1900);
-        } else {
-            guardStep = 4;
-            showBubble(guardBubbleEl, guardGameLine, guardPos.x, guardPos.y, 60);
-            setTimeout(() => {
-                guardTextEl.textContent = '...Ладно. Хочешь пройти — сыграй со мной! 🎮';
-                guardBtnEl.textContent  = 'Сыграть! 🎮';
-                guardDialogueEl.classList.add('show');
-                inputBlocked = false;
-            }, 600);
-        }
-    }
-
-    guardBtnEl.addEventListener('click', () => {
-        if (guardStep === 4) {
-            guardDialogueEl.classList.remove('show');
-            hideBubble(guardBubbleEl);
-            guardStep = 5;
-            inputBlocked = true;
-            startBubbleShooter();
-        }
-    });
-
-    function updateDialogueL3() {
-        if (guardStep > 0 && guardStep < 4) {
-            dialogueEl.classList.remove('show');
-            currentDialogue = null;
-            return;
-        }
-        if (hit(player, zoneGuard) && guardStep === 0) {
-            dialogueEl.textContent = '🚨 Подойти к охраннику (ENTER)';
-            dialogueEl.classList.add('show');
-            currentDialogue = 'guard';
-        } else if (!hit(player, zoneGuard)) {
-            dialogueEl.classList.remove('show');
-            currentDialogue = null;
-        }
-    }
+    function guardInteract(){if(guardStep!==0)return;guardStep=1;inputBlocked=true;dialogueEl.classList.remove('show');guardBubbleIndex=0;showNextAngryBubble();}
+    function showNextAngryBubble(){if(guardBubbleIndex<guardAngryLines.length){showBubble(guardBubbleEl,guardAngryLines[guardBubbleIndex],guardPos.x,guardPos.y,60);guardBubbleIndex++;guardBubbleTimer=setTimeout(()=>{hideBubble(guardBubbleEl);setTimeout(showNextAngryBubble,300);},1900);}else{guardStep=4;showBubble(guardBubbleEl,guardGameLine,guardPos.x,guardPos.y,60);setTimeout(()=>{guardTextEl.textContent='...Ладно. Хочешь пройти — сыграй со мной! 🎮';guardBtnEl.textContent='Сыграть! 🎮';guardDialogueEl.classList.add('show');inputBlocked=false;},600);}}
+    guardBtnEl.addEventListener('click',()=>{if(guardStep===4){guardDialogueEl.classList.remove('show');hideBubble(guardBubbleEl);guardStep=5;inputBlocked=true;startBubbleShooter();}});
+    function updateDialogueL3(){if(guardStep>0&&guardStep<4){dialogueEl.classList.remove('show');currentDialogue=null;return;}if(hit(player,zoneGuard)&&guardStep===0){dialogueEl.textContent='🚨 Подойти к охраннику (ENTER)';dialogueEl.classList.add('show');currentDialogue='guard';}else if(!hit(player,zoneGuard)){dialogueEl.classList.remove('show');currentDialogue=null;}}
 
     // ─── ДИАЛОГ С ВАРЕЙ ─────────────────────────────────────────────
-    const varyaDialogues = [
-        'О, Алёнка! Я хотела пойти в столовую, а она закрыта 😔😔😔😔',
-        'Я так хотела питсы...',
-        'Слушай, а может ты знаешь, где её найти?'
-    ];
-    let varyaDialogueIndex = 0;
-    let varyaStep = 0;
+    const varyaDialogues=['О, Алёнка! Я хотела пойти в столовую, а она закрыта 😔😔😔😔','Я так хотела питсы...','Слушай, а может ты знаешь, где её найти?'];
+    let varyaDialogueIndex=0,varyaStep=0;
+    function varyaInteract(){if(varyaStep!==0)return;varyaStep=1;varyaDialogueIndex=0;inputBlocked=true;dialogueEl.classList.remove('show');showNextVaryaBubble();}
+    function showNextVaryaBubble(){if(varyaDialogueIndex<varyaDialogues.length){showBubble(varyaBubbleEl,varyaDialogues[varyaDialogueIndex],varyaPos.x,varyaPos.y,60);varyaDialogueIndex++;dialogueEl.textContent='[ ENTER — дальше ]';dialogueEl.classList.add('show');inputBlocked=false;}else{hideBubble(varyaBubbleEl);dialogueEl.classList.remove('show');varyaStep=2;varyaTextEl.textContent='...Поможешь мне найти питсу? 🍕';varyaBtnEl.textContent='Помочь! 💜';varyaDialogueEl.classList.add('show');inputBlocked=false;}}
+    varyaBtnEl.addEventListener('click',()=>{if(varyaStep===2){varyaDialogueEl.classList.remove('show');hideBubble(varyaBubbleEl);varyaStep=3;inputBlocked=true;startPizzaGame();}});
+    function updateDialogueL4(){if(varyaStep===1||varyaStep===2||varyaLoseDialogueEl.classList.contains('show')||varyaWinDialogueEl.classList.contains('show'))return;if(varyaStep===3&&!varyaLoseDialogueEl.classList.contains('show')&&!varyaWinDialogueEl.classList.contains('show')){if(hit(player,zoneVarya)){dialogueEl.textContent='💬 Подойти к Варе (ENTER)';dialogueEl.classList.add('show');currentDialogue='varya';}else{dialogueEl.classList.remove('show');currentDialogue=null;}return;}if(varyaStep===0){if(hit(player,zoneVarya)){dialogueEl.textContent='💬 Подойти к Варе (ENTER)';dialogueEl.classList.add('show');currentDialogue='varya';}else{dialogueEl.classList.remove('show');currentDialogue=null;}}}
 
-    function varyaInteract() {
-        if (varyaStep !== 0) return;
-        varyaStep = 1;
-        varyaDialogueIndex = 0;
-        inputBlocked = true;
-        dialogueEl.classList.remove('show');
-        showNextVaryaBubble();
-    }
-
-    function showNextVaryaBubble() {
-        if (varyaDialogueIndex < varyaDialogues.length) {
-            showBubble(varyaBubbleEl, varyaDialogues[varyaDialogueIndex], varyaPos.x, varyaPos.y, 60);
-            varyaDialogueIndex++;
-            dialogueEl.textContent = '[ ENTER — дальше ]';
-            dialogueEl.classList.add('show');
-            inputBlocked = false;
-        } else {
-            hideBubble(varyaBubbleEl);
-            dialogueEl.classList.remove('show');
-            varyaStep = 2;
-            varyaTextEl.textContent = '...Поможешь мне найти питсу? 🍕';
-            varyaBtnEl.textContent  = 'Помочь! 💜';
-            varyaDialogueEl.classList.add('show');
-            inputBlocked = false;
-        }
-    }
-
-    varyaBtnEl.addEventListener('click', () => {
-        if (varyaStep === 2) {
-            varyaDialogueEl.classList.remove('show');
-            hideBubble(varyaBubbleEl);
-            varyaStep = 3;
-            inputBlocked = true;
-            startPizzaGame();
-        }
-    });
-
-    function updateDialogueL4() {
-        if (varyaStep === 1 || varyaStep === 2 ||
-            varyaLoseDialogueEl.classList.contains('show') ||
-            varyaWinDialogueEl.classList.contains('show')) return;
-
-        if (varyaStep === 3 &&
-            !varyaLoseDialogueEl.classList.contains('show') &&
-            !varyaWinDialogueEl.classList.contains('show')) {
-            if (hit(player, zoneVarya)) {
-                dialogueEl.textContent = '💬 Подойти к Варе (ENTER)';
-                dialogueEl.classList.add('show');
-                currentDialogue = 'varya';
-            } else {
-                dialogueEl.classList.remove('show');
-                currentDialogue = null;
-            }
-            return;
-        }
-
-        if (varyaStep === 0) {
-            if (hit(player, zoneVarya)) {
-                dialogueEl.textContent = '💬 Подойти к Варе (ENTER)';
-                dialogueEl.classList.add('show');
-                currentDialogue = 'varya';
-            } else {
-                dialogueEl.classList.remove('show');
-                currentDialogue = null;
-            }
-        }
-    }
-
-    function updateDialogueL2() {
-        if (inputBlocked || mishaStep >= 1) return;
-        if (hit(player, zoneMisha)) {
-            dialogueEl.textContent = '💬 Подойти к Мише (ENTER)';
-            dialogueEl.classList.add('show');
-            currentDialogue = 'misha';
-        } else {
-            dialogueEl.classList.remove('show');
-            currentDialogue = null;
-        }
-    }
-
-    function updateDialogueL1() {
-        if (inputBlocked) { dialogueEl.classList.remove('show'); currentDialogue=null; return; }
-        let near = null;
-        for (let name in zonesL1) if (hit(player, zonesL1[name])) { near=name; break; }
-        if (near==='door') {
-            dialogueEl.textContent = tasksCompleted.cat && tasksCompleted.chinchilla
-                ? '🚪 Выйти из дома (ENTER)'
-                : '🚪 Нужно сначала покормить всех животных!';
-            dialogueEl.classList.add('show'); currentDialogue='door';
-        } else if (near==='cat' && !tasksCompleted.cat) {
-            dialogueEl.textContent='🐱 Покормить Роксану (ENTER)';
-            dialogueEl.classList.add('show'); currentDialogue='cat';
-        } else if (near==='chinchilla' && !tasksCompleted.chinchilla) {
-            dialogueEl.textContent='🐹 Покормить Шлёпокрысу (ENTER)';
-            dialogueEl.classList.add('show'); currentDialogue='chinchilla';
-        } else if (near==='computer' && !tasksCompleted.computer) {
-            dialogueEl.textContent='💻 Проверить сообщения (ENTER)';
-            dialogueEl.classList.add('show'); currentDialogue='computer';
-        } else {
-            dialogueEl.classList.remove('show'); currentDialogue=null;
-        }
-    }
+    function updateDialogueL2(){if(inputBlocked||mishaStep>=1)return;if(hit(player,zoneMisha)){dialogueEl.textContent='💬 Подойти к Мише (ENTER)';dialogueEl.classList.add('show');currentDialogue='misha';}else{dialogueEl.classList.remove('show');currentDialogue=null;}}
+    function updateDialogueL1(){if(inputBlocked){dialogueEl.classList.remove('show');currentDialogue=null;return;}let near=null;for(let name in zonesL1)if(hit(player,zonesL1[name])){near=name;break;}if(near==='door'){dialogueEl.textContent=tasksCompleted.cat&&tasksCompleted.chinchilla?'🚪 Выйти из дома (ENTER)':'🚪 Нужно сначала покормить всех животных!';dialogueEl.classList.add('show');currentDialogue='door';}else if(near==='cat'&&!tasksCompleted.cat){dialogueEl.textContent='🐱 Покормить Роксану (ENTER)';dialogueEl.classList.add('show');currentDialogue='cat';}else if(near==='chinchilla'&&!tasksCompleted.chinchilla){dialogueEl.textContent='🐹 Покормить Шлёпокрысу (ENTER)';dialogueEl.classList.add('show');currentDialogue='chinchilla';}else if(near==='computer'&&!tasksCompleted.computer){dialogueEl.textContent='💻 Проверить сообщения (ENTER)';dialogueEl.classList.add('show');currentDialogue='computer';}else{dialogueEl.classList.remove('show');currentDialogue=null;}}
+    function updateDialogueL6(){if(inputBlocked||memoryGameContainer.classList.contains('show'))return;if(sonkaStep===2&&sonkaWinDialogueEl.classList.contains('show'))return;if(sonkaStep===0){if(hit(player,zoneSonka)){dialogueEl.textContent='💬 Подойти к Соньке (ENTER)';dialogueEl.classList.add('show');currentDialogue='sonka';}else{dialogueEl.classList.remove('show');currentDialogue=null;}}}
+    function updateDialogueL7(){if(inputBlocked)return;if(hit(player,zoneDashkaL7)&&dashkaStep===0){dialogueEl.textContent='💬 Подойти к Дашке (ENTER)';dialogueEl.classList.add('show');currentDialogue='dashka';}else if(!hit(player,zoneDashkaL7)){if(currentDialogue==='dashka'){dialogueEl.classList.remove('show');currentDialogue=null;}}}
 
     // ─── ВВОД ────────────────────────────────────────────────────────
     document.addEventListener('keydown', e => {
         keys[e.key] = true;
 
-        if (e.key >= '1' && e.key <= '6') {
+        if (e.key >= '1' && e.key <= '7') {
             const lvl = parseInt(e.key);
             if (lvl === 5) return;
             resetAllStates();
-            currentLevel = lvl;
-            player.x = 100; player.y = 450;
+            currentLevel = lvl; player.x = 100; player.y = 450;
             if (lvl === 1) { tasksCompleted = { cat: false, chinchilla: false, computer: false }; mishaStep = 0; }
             if (lvl === 2) mishaStep = 0;
             if (lvl === 4) varyaStep = 0;
-            levelLabelEl.textContent =
-                lvl === 1 ? '🏠 Уровень 1' : lvl === 2 ? '🌆 Уровень 2' :
-                lvl === 3 ? '🌅 Уровень 3' : lvl === 4 ? '🏫 Уровень 4' :
-                lvl === 6 ? '🏫 Уровень 6' : '';
+            if (lvl === 6) sonkaStep = 0;
+            if (lvl === 7) dashkaStep = 0;
+            levelLabelEl.textContent = lvl===1?'🏠 Уровень 1':lvl===2?'🌆 Уровень 2':lvl===3?'🌅 Уровень 3':lvl===4?'🏫 Уровень 4':lvl===6?'🏫 Уровень 6':lvl===7?'🏫 Уровень 7':'';
             return;
         }
+        if (e.key==='Escape') { if (fullscreenMsgEl.classList.contains('show')) fullscreenMsgEl.classList.remove('show'); return; }
 
-        if (e.key==='Escape') {
-            if (fullscreenMsgEl.classList.contains('show')) fullscreenMsgEl.classList.remove('show');
+        // Ввод цифр для судоку
+        if (sudokuRunning && sudokuSelected && e.key >= '1' && e.key <= '9') {
+            const num = parseInt(e.key); const {r, c} = sudokuSelected;
+            if (sudokuBoard[r][c] === 0) { sudokuBoard[r][c] = num; sudokuSelected = null; drawSudoku(); checkSudokuWin(); }
             return;
+        }
+        if (sudokuRunning && sudokuSelected && (e.key === 'Backspace' || e.key === 'Delete')) {
+            const {r, c} = sudokuSelected; sudokuBoard[r][c] = 0; drawSudoku(); return;
         }
 
         if (e.key==='Enter') {
-            // Победа в Bubble Shooter
-            if (bsRunning && bsGamestate === bsGamestates.won) {
-                stopBubbleShooter();
-                doTransition(() => {
-                    currentLevel = 4;
-                    levelLabelEl.textContent = '🏫 Уровень 4';
-                    player.x = 50; player.y = 450;
-                    varyaStep = 0;
-                });
-                return;
-            }
-
-            if (mishaStep===6 && pizzaFullscreenEl.classList.contains('show')) {
-                mishaEnterPressed();
-                return;
-            }
+            if (bsRunning && bsGamestate === bsGamestates.won) { stopBubbleShooter(); doTransition(() => { currentLevel = 4; levelLabelEl.textContent = '🏫 Уровень 4'; player.x = 50; player.y = 450; varyaStep = 0; }); return; }
+            if (mishaStep===6 && pizzaFullscreenEl.classList.contains('show')) { mishaEnterPressed(); return; }
             if (inputBlocked) return;
-
             if (currentLevel===1) {
-                if      (currentDialogue==='cat'        && !tasksCompleted.cat)        animateCatFeed();
+                if (currentDialogue==='cat' && !tasksCompleted.cat) animateCatFeed();
                 else if (currentDialogue==='chinchilla' && !tasksCompleted.chinchilla) animateChinchillaFeed();
-                else if (currentDialogue==='computer'   && !tasksCompleted.computer) {
-                    fullscreenMsgEl.classList.add('show');
-                    tasksCompleted.computer = true;
-                }
-                else if (currentDialogue==='door' && tasksCompleted.cat && tasksCompleted.chinchilla) {
-                    doTransition(()=>{ currentLevel=2; levelLabelEl.textContent='🌆 Уровень 2'; player.x=50; player.y=450; });
-                }
+                else if (currentDialogue==='computer' && !tasksCompleted.computer) { fullscreenMsgEl.classList.add('show'); tasksCompleted.computer = true; }
+                else if (currentDialogue==='door' && tasksCompleted.cat && tasksCompleted.chinchilla) { doTransition(()=>{ currentLevel=2; levelLabelEl.textContent='🌆 Уровень 2'; player.x=50; player.y=450; }); }
             } else if (currentLevel===2) {
                 if (mishaStep===0 && currentDialogue==='misha') mishaInteract();
                 else if (mishaStep===1 || mishaStep===3) mishaEnterPressed();
@@ -1634,6 +1168,10 @@
             } else if (currentLevel===4) {
                 if (currentDialogue==='varya' && varyaStep===0) varyaInteract();
                 else if (varyaStep===1) showNextVaryaBubble();
+            } else if (currentLevel===6) {
+                if (currentDialogue==='sonka' && sonkaStep===0) { sonkaDialogueEl.classList.add('show'); dialogueEl.classList.remove('show'); }
+            } else if (currentLevel===7) {
+                if (currentDialogue==='dashka' && dashkaStep===0) { dashkaDialogueEl.classList.add('show'); dialogueEl.classList.remove('show'); }
             }
         }
     });
@@ -1642,48 +1180,27 @@
     // ─── ИГРОВОЙ ЦИКЛ ────────────────────────────────────────────────
     function gameLoop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if      (currentLevel===1) drawLevel1();
+        if (currentLevel===1) drawLevel1();
         else if (currentLevel===2) drawLevel2();
         else if (currentLevel===3) drawLevel3();
         else if (currentLevel===4) drawLevel4();
         else if (currentLevel===6) drawLevel6();
+        else if (currentLevel===7) drawLevel7();
 
-        const anyOverlay = pizzaChoiceEl.classList.contains('show') ||
-                           pizzaFullscreenEl.classList.contains('show') ||
-                           fullscreenMsgEl.classList.contains('show') ||
-                           varyaLoseDialogueEl.classList.contains('show') ||
-                           varyaWinDialogueEl.classList.contains('show') ||
-                           varyaDialogueEl.classList.contains('show') ||
-                           guardDialogueEl.classList.contains('show') ||
-                           miniGameActiveEl.classList.contains('show');
+        const anyOverlay = pizzaChoiceEl.classList.contains('show') || pizzaFullscreenEl.classList.contains('show') || fullscreenMsgEl.classList.contains('show') || varyaLoseDialogueEl.classList.contains('show') || varyaWinDialogueEl.classList.contains('show') || varyaDialogueEl.classList.contains('show') || guardDialogueEl.classList.contains('show') || sonkaDialogueEl.classList.contains('show') || sonkaWinDialogueEl.classList.contains('show') || dashkaDialogueEl.classList.contains('show') || dashkaWinDialogueEl.classList.contains('show') || miniGameActiveEl.classList.contains('show') || memoryGameContainer.classList.contains('show') || sudokuContainer.classList.contains('show');
 
-        // Мини-игра Вари (питса-серпантин)
         if (mgRunning && mgActiveGame === 'pizza') {
-            if (keys['ArrowLeft'])  mgBasketX = Math.max(20, mgBasketX - MG_BASKET_SPEED);
+            if (keys['ArrowLeft']) mgBasketX = Math.max(20, mgBasketX - MG_BASKET_SPEED);
             if (keys['ArrowRight']) mgBasketX = Math.min(730, mgBasketX + MG_BASKET_SPEED);
-            const basketEl = getMgBasketEl();
-            if (basketEl) basketEl.style.left = mgBasketX + 'px';
-
+            const basketEl = getMgBasketEl(); if (basketEl) basketEl.style.left = mgBasketX + 'px';
             for (let i = mgItems.length - 1; i >= 0; i--) {
-                const item = mgItems[i];
-                item.y += item.speed;
+                const item = mgItems[i]; item.y += item.speed;
                 if (item.y > 510 && item.y < 570) {
                     const bx = mgBasketX + 25;
                     if (Math.abs(item.x - bx) < 50) {
-                        if (item.good) {
-                            mgScore++;
-                            updateMgUI();
-                            if (mgScore >= 10) endMiniGame(true);
-                        } else {
-                            mgLives--;
-                            updateMgUI();
-                            const bEl = getMgBasketEl();
-                            if (bEl) { bEl.style.transform = 'translateX(-5px)'; setTimeout(() => { if (bEl) bEl.style.transform = ''; }, 100); }
-                            if (mgLives <= 0) endMiniGame(false);
-                        }
-                        mgItems.splice(i, 1);
-                        continue;
+                        if (item.good) { mgScore++; updateMgUI(); if (mgScore >= 10) endMiniGame(true); }
+                        else { mgLives--; updateMgUI(); const bEl = getMgBasketEl(); if (bEl) { bEl.style.transform = 'translateX(-5px)'; setTimeout(() => { if (bEl) bEl.style.transform = ''; }, 100); } if (mgLives <= 0) endMiniGame(false); }
+                        mgItems.splice(i, 1); continue;
                     }
                 }
                 if (item.y > 620) mgItems.splice(i, 1);
@@ -1691,49 +1208,28 @@
             updateMiniGameItems();
         }
 
-        // Аленка
-        if (!mgRunning && !bsRunning) {
+        if (!mgRunning && !bsRunning && !memoryGameContainer.classList.contains('show') && !sudokuContainer.classList.contains('show')) {
             if (!inputBlocked && !anyOverlay) {
                 let nx = player.x, ny = player.y;
-                if (keys['ArrowUp'])    ny -= player.speed;
-                if (keys['ArrowDown'])  ny += player.speed;
-                if (keys['ArrowLeft'])  nx -= player.speed;
+                if (keys['ArrowUp']) ny -= player.speed;
+                if (keys['ArrowDown']) ny += player.speed;
+                if (keys['ArrowLeft']) nx -= player.speed;
                 if (keys['ArrowRight']) nx += player.speed;
-                const wz = currentLevel===1 ? walkL1 : currentLevel===2 ? walkL2 : currentLevel===3 ? walkL3 : currentLevel===4 ? walkL4 : walkL6;
+                const wz = currentLevel===1?walkL1:currentLevel===2?walkL2:currentLevel===3?walkL3:currentLevel===4?walkL4:currentLevel===6?walkL6:walkL7;
                 const lx = nx+10, rx = nx+player.width-10, fy = ny+player.height-5;
                 if (canWalk(lx,fy,wz) && canWalk(rx,fy,wz)) { player.x=nx; player.y=ny; }
             }
             drawPlayer();
         }
 
-        if (currentLevel===2) {
-            if (mishaBubbleEl.classList.contains('show')) {
-                const bw = mishaBubbleEl.offsetWidth, bh = mishaBubbleEl.offsetHeight;
-                mishaBubbleEl.style.left = (mishaPos.x + 32 - bw/2) + 'px';
-                mishaBubbleEl.style.top  = (mishaPos.y - bh - 14) + 'px';
-            }
-            updateDialogueL2();
-        } else if (currentLevel===1) {
-            updateDialogueL1();
-        } else if (currentLevel===3) {
-            if (guardBubbleEl.classList.contains('show')) {
-                const bw = guardBubbleEl.offsetWidth, bh = guardBubbleEl.offsetHeight;
-                guardBubbleEl.style.left = (guardPos.x + 30 - bw/2) + 'px';
-                guardBubbleEl.style.top  = (guardPos.y - bh - 14) + 'px';
-            }
-            updateDialogueL3();
-        } else if (currentLevel===4) {
-            if (varyaBubbleEl.classList.contains('show')) {
-                const bw = varyaBubbleEl.offsetWidth, bh = varyaBubbleEl.offsetHeight;
-                varyaBubbleEl.style.left = (varyaPos.x + 30 - bw/2) + 'px';
-                varyaBubbleEl.style.top  = (varyaPos.y - bh - 14) + 'px';
-            }
-            updateDialogueL4();
-        }
-
+        if (currentLevel===2) { if(mishaBubbleEl.classList.contains('show')){const b=mishaBubbleEl.offsetWidth,h=mishaBubbleEl.offsetHeight;mishaBubbleEl.style.left=(mishaPos.x+32-b/2)+'px';mishaBubbleEl.style.top=(mishaPos.y-h-14)+'px';} updateDialogueL2(); }
+        else if (currentLevel===1) updateDialogueL1();
+        else if (currentLevel===3) { if(guardBubbleEl.classList.contains('show')){const b=guardBubbleEl.offsetWidth,h=guardBubbleEl.offsetHeight;guardBubbleEl.style.left=(guardPos.x+30-b/2)+'px';guardBubbleEl.style.top=(guardPos.y-h-14)+'px';} updateDialogueL3(); }
+        else if (currentLevel===4) { if(varyaBubbleEl.classList.contains('show')){const b=varyaBubbleEl.offsetWidth,h=varyaBubbleEl.offsetHeight;varyaBubbleEl.style.left=(varyaPos.x+30-b/2)+'px';varyaBubbleEl.style.top=(varyaPos.y-h-14)+'px';} updateDialogueL4(); }
+        else if (currentLevel===6) updateDialogueL6();
+        else if (currentLevel===7) updateDialogueL7();
         requestAnimationFrame(gameLoop);
     }
-
     gameLoop();
 </script>
 </body>
