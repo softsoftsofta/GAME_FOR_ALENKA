@@ -836,7 +836,15 @@
     varyaLoseBtnEl.addEventListener('click', () => { varyaLoseDialogueEl.classList.remove('show'); startPizzaGame(); });
     varyaWinBtnEl.addEventListener('click', () => {
         varyaWinDialogueEl.classList.remove('show');
-        doTransition(() => { currentLevel = 6; levelLabelEl.textContent = '🏫 Уровень 6'; player.x = 50; player.y = 450; sonkaStep = 0; });
+        inputBlocked = false;
+        doTransition(() => {
+            currentLevel = 6;
+            levelLabelEl.textContent = '🏫 Уровень 6';
+            player.x = 50;
+            player.y = 450;
+            sonkaStep = 0;
+            inputBlocked = false;
+        });
     });
 
     // ─── МИНИ-ИГРА ОХРАННИЦЫ: BUBBLE SHOOTER ──────────────────────────
