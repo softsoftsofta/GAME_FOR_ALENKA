@@ -816,8 +816,12 @@
 
     function endMiniGame(won) {
         stopMiniGame();
-        if (won) varyaWinDialogueEl.classList.add('show');
-        else varyaLoseDialogueEl.classList.add('show');
+        inputBlocked = false;  // ВАЖНО: разрешаем ввод
+        if (won) {
+            varyaWinDialogueEl.classList.add('show');
+        } else {
+            varyaLoseDialogueEl.classList.add('show');
+        }
     }
 
     function updateMiniGameItems() {
