@@ -365,6 +365,12 @@
         .memory-card:not(.flipped):not(.matched) .card-content-m {
             display: none;
         }
+        .card-content-m img {
+        width: 85%;
+        height: 85%;
+        object-fit: contain;
+        border-radius: 12px;
+}
         .memory-card.flipped .card-content-m,
         .memory-card.matched .card-content-m {
             display: flex;
@@ -589,7 +595,7 @@
 
     <div id="sudokuContainer">
         <canvas id="sudokuCanvas" width="450" height="450"></canvas>
-        <div class="sudoku-hint">🖱 Кликай по клетке | ⌨ Цифры 1-9 | ← Backspace стереть</div>
+        <div class="sudoku-hint">🖱 Кликай по клетке | ⌨ Цифры 1-9 | ← Backspace стереть |  P - пропустить</div>
     </div>
 </div>
 
@@ -900,7 +906,7 @@
     function stopBubbleShooter(){bsRunning=false;miniGameActiveEl.classList.remove('show');miniGameActiveEl.innerHTML='';}
 
     // ─── ИГРА "ПАМЯТЬ" ──────────────────────────────────────────────
-    const CARD_SYMBOLS = ['🌟', '🎂', '🎁', '🍕', '💖', '🌸', '🍰', '🎈'];
+    const CARD_SYMBOLS = ['card1.jpg', 'card2.jpg', 'card3.jpg', 'card4.jpg', 'card5.jpg', 'card6.jpg', 'card7.jpg', 'card8.jpg'];
     let memoryCards = [], memoryFlippedCards = [], memoryMatchedPairs = 0, memoryMoves = 0, memoryLockBoard = false, memoryTimeoutId = null;
 
     function initMemoryGame() {
@@ -922,7 +928,14 @@
             if (card.isFlipped) cardElement.classList.add('flipped');
             if (card.isMatched) cardElement.classList.add('matched');
             const content = document.createElement('div'); content.className = 'card-content-m';
-            const span = document.createElement('span'); span.textContent = card.symbol; content.appendChild(span);
+            const img = document.createElement('img');
+            img.src = card.symbol;
+            img.alt = 'Card';
+            img.style.width = '85%';
+            img.style.height = '85%';
+            img.style.objectFit = 'contain';
+            img.style.borderRadius = '12px';
+            content.appendChild(img);
             cardElement.appendChild(content);
             const back = document.createElement('div'); back.className = 'card-back-m'; back.textContent = '❓';
             cardElement.appendChild(back);
@@ -982,86 +995,198 @@
     sonkaBtnEl.addEventListener('click', () => { sonkaDialogueEl.classList.remove('show'); sonkaStep = 1; inputBlocked = true; startMemoryGame(); });
     sonkaWinBtnEl.addEventListener('click', () => { sonkaWinDialogueEl.classList.remove('show'); doTransition(() => { currentLevel = 7; levelLabelEl.textContent = '🏫 Уровень 7'; player.x = 50; player.y = 450; dashkaStep = 0; }); });
 
-    // ─── МИНИ-ИГРА ДАШКИ: СУДОКУ ──────────────────────────────────────
-    let sudokuRunning = false;
-    let sudokuBoard = [];
-    let sudokuSolution = [];
-    let sudokuSelected = null;
+// ─── МИНИ-ИГРА ДАШКИ: СУДОКУ ──────────────────────────────────────
+let sudokuRunning = false;
+let sudokuBoard = [];
+let sudokuSolution = [];
+let sudokuSelected = null;
+let sudokuMistakes = 0;
+const SUDOKU_MAX_MISTAKES = 3;
 
-    function generateSudoku() {
-        const sol = [
-            [5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],
-            [8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],
-            [9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]
-        ];
-        sudokuSolution = sol.map(r => [...r]);
-        sudokuBoard = sol.map(r => [...r]);
-        let removed = 0;
-        while (removed < 45) {
-            const r = Math.floor(Math.random() * 9), c = Math.floor(Math.random() * 9);
-            if (sudokuBoard[r][c] !== 0) { sudokuBoard[r][c] = 0; removed++; }
+function generateSudoku() {
+    const sol = [
+        [5,3,4,6,7,8,9,1,2],[6,7,2,1,9,5,3,4,8],[1,9,8,3,4,2,5,6,7],
+        [8,5,9,7,6,1,4,2,3],[4,2,6,8,5,3,7,9,1],[7,1,3,9,2,4,8,5,6],
+        [9,6,1,5,3,7,2,8,4],[2,8,7,4,1,9,6,3,5],[3,4,5,2,8,6,1,7,9]
+    ];
+    sudokuSolution = sol.map(r => [...r]);
+    sudokuBoard = sol.map(r => [...r]);
+    let removed = 0;
+    while (removed < 45) {
+        const r = Math.floor(Math.random() * 9), c = Math.floor(Math.random() * 9);
+        if (sudokuBoard[r][c] !== 0) { sudokuBoard[r][c] = 0; removed++; }
+    }
+}
+
+function drawSudoku() {
+    sudokuCtx.fillStyle = '#f5f0e8'; sudokuCtx.fillRect(0, 0, 450, 450);
+    const o = 25, cs = 44;
+
+    // Сетка
+    for (let i = 0; i <= 9; i++) {
+        const w = i % 3 === 0 ? 3 : 1;
+        sudokuCtx.lineWidth = w; sudokuCtx.strokeStyle = '#333';
+        sudokuCtx.beginPath(); sudokuCtx.moveTo(o + i * cs, o); sudokuCtx.lineTo(o + i * cs, o + 9 * cs); sudokuCtx.stroke();
+        sudokuCtx.beginPath(); sudokuCtx.moveTo(o, o + i * cs); sudokuCtx.lineTo(o + 9 * cs, o + i * cs); sudokuCtx.stroke();
+    }
+
+    // Цифры
+    sudokuCtx.font = '22px Courier New'; sudokuCtx.textAlign = 'center'; sudokuCtx.textBaseline = 'middle';
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            if (sudokuBoard[r][c] !== 0) {
+                sudokuCtx.fillStyle = '#2c3e50';
+                sudokuCtx.fillText(sudokuBoard[r][c], o + c * cs + cs / 2, o + r * cs + cs / 2);
+            }
         }
     }
 
-    function drawSudoku() {
-        sudokuCtx.fillStyle = '#f5f0e8'; sudokuCtx.fillRect(0, 0, 450, 450);
-        const o = 25, cs = 44;
-        for (let i = 0; i <= 9; i++) {
-            const w = i % 3 === 0 ? 3 : 1;
-            sudokuCtx.lineWidth = w; sudokuCtx.strokeStyle = '#333';
-            sudokuCtx.beginPath(); sudokuCtx.moveTo(o + i * cs, o); sudokuCtx.lineTo(o + i * cs, o + 9 * cs); sudokuCtx.stroke();
-            sudokuCtx.beginPath(); sudokuCtx.moveTo(o, o + i * cs); sudokuCtx.lineTo(o + 9 * cs, o + i * cs); sudokuCtx.stroke();
-        }
-        sudokuCtx.font = '22px Courier New'; sudokuCtx.textAlign = 'center'; sudokuCtx.textBaseline = 'middle';
-        for (let r = 0; r < 9; r++) {
-            for (let c = 0; c < 9; c++) {
-                if (sudokuBoard[r][c] !== 0) {
-                    sudokuCtx.fillStyle = '#2c3e50';
-                    sudokuCtx.fillText(sudokuBoard[r][c], o + c * cs + cs / 2, o + r * cs + cs / 2);
+    // Подсветка выбранной клетки
+    if (sudokuSelected) {
+        const { r, c } = sudokuSelected;
+        sudokuCtx.fillStyle = 'rgba(46, 204, 113, 0.4)';
+        sudokuCtx.fillRect(o + c * cs + 2, o + r * cs + 2, cs - 4, cs - 4);
+    }
+
+    // Счетчик ошибок
+    sudokuCtx.fillStyle = '#e74c3c';
+    sudokuCtx.font = 'bold 16px Courier New';
+    sudokuCtx.textAlign = 'center';
+    sudokuCtx.fillText('❌ Ошибки: ' + sudokuMistakes + '/' + SUDOKU_MAX_MISTAKES, 225, 20);
+    sudokuCtx.textAlign = 'left';
+}
+
+function sudokuCanvasClick(e) {
+    if (!sudokuRunning) return;
+    const rect = sudokuCanvas.getBoundingClientRect();
+    const scaleX = 450 / rect.width, scaleY = 450 / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX, my = (e.clientY - rect.top) * scaleY;
+    const o = 25, cs = 44;
+    const c = Math.floor((mx - o) / cs), r = Math.floor((my - o) / cs);
+    if (r >= 0 && r < 9 && c >= 0 && c < 9 && sudokuBoard[r][c] === 0) {
+        sudokuSelected = { r, c };
+        drawSudoku();
+    }
+}
+
+function checkSudokuWin() {
+    for (let r = 0; r < 9; r++)
+        for (let c = 0; c < 9; c++)
+            if (sudokuBoard[r][c] !== sudokuSolution[r][c]) return;
+    sudokuRunning = false;
+    sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
+    sudokuContainer.classList.remove('show');
+
+    // Финальный диалог Дашки
+    document.getElementById('dashkaWinText').textContent = 'С днём рождения, Алёнка! 🎉🎂 Давайте уйдём с истории в честь этого!';
+    dashkaWinBtnEl.textContent = 'Уйти 🎉';
+    dashkaWinDialogueEl.classList.add('show');
+}
+function sudokuLose() {
+    sudokuRunning = false;
+    sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
+    sudokuContainer.classList.remove('show');
+    document.getElementById('dashkaWinText').textContent = 'Ой, не получилось! Давай попробуем ещё раз? 💪';
+    dashkaWinBtnEl.textContent = 'Попробовать снова 🔄';
+    dashkaWinDialogueEl.classList.add('show');
+}
+
+function startSudoku() {
+    sudokuMistakes = 0;
+    generateSudoku();
+    sudokuSelected = null;
+    sudokuRunning = true;
+    drawSudoku();
+    sudokuContainer.classList.add('show');
+    sudokuCanvas.addEventListener('click', sudokuCanvasClick);
+}
+
+function stopSudoku() {
+    sudokuRunning = false;
+    sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
+    sudokuContainer.classList.remove('show');
+}
+
+// Обработчик клавиатуры для судоку (вызывается из общего обработчика)
+function handleSudokuKey(key) {
+    if (!sudokuRunning || !sudokuSelected) return false;
+
+    if (key >= '1' && key <= '9') {
+        const num = parseInt(key);
+        const {r, c} = sudokuSelected;
+
+        if (sudokuBoard[r][c] === 0) {
+            if (num === sudokuSolution[r][c]) {
+                // Правильно
+                sudokuBoard[r][c] = num;
+                sudokuSelected = null;
+                drawSudoku();
+                checkSudokuWin();
+            } else {
+                // Ошибка
+                sudokuMistakes++;
+                drawSudoku();
+
+                if (sudokuMistakes >= SUDOKU_MAX_MISTAKES) {
+                    sudokuLose();
+                } else {
+                    // Визуально показать ошибку
+                    const o = 25, cs = 44;
+                    sudokuCtx.fillStyle = 'rgba(231, 76, 60, 0.5)';
+                    sudokuCtx.fillRect(o + c * cs + 2, o + r * cs + 2, cs - 4, cs - 4);
+                    sudokuSelected = null;
+                    setTimeout(() => { drawSudoku(); }, 500);
                 }
             }
         }
-        if (sudokuSelected) {
-            const { r, c } = sudokuSelected;
-            sudokuCtx.fillStyle = 'rgba(46, 204, 113, 0.4)';
-            sudokuCtx.fillRect(o + c * cs + 2, o + r * cs + 2, cs - 4, cs - 4);
-        }
+        return true;
     }
 
-    function sudokuCanvasClick(e) {
-        if (!sudokuRunning) return;
-        const rect = sudokuCanvas.getBoundingClientRect();
-        const scaleX = 450 / rect.width, scaleY = 450 / rect.height;
-        const mx = (e.clientX - rect.left) * scaleX, my = (e.clientY - rect.top) * scaleY;
-        const o = 25, cs = 44;
-        const c = Math.floor((mx - o) / cs), r = Math.floor((my - o) / cs);
-        if (r >= 0 && r < 9 && c >= 0 && c < 9 && sudokuBoard[r][c] === 0) {
-            sudokuSelected = { r, c }; drawSudoku();
-        }
+    if (key === 'Backspace' || key === 'Delete') {
+        const {r, c} = sudokuSelected;
+        sudokuBoard[r][c] = 0;
+        drawSudoku();
+        return true;
     }
 
-    function checkSudokuWin() {
-        for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (sudokuBoard[r][c] !== sudokuSolution[r][c]) return;
-        sudokuRunning = false;
-        sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
-        sudokuContainer.classList.remove('show');
-        dashkaWinDialogueEl.classList.add('show');
-    }
+    return false;
+}
 
-    function startSudoku() {
-        generateSudoku(); sudokuSelected = null; sudokuRunning = true;
-        drawSudoku(); sudokuContainer.classList.add('show');
-        sudokuCanvas.addEventListener('click', sudokuCanvasClick);
-    }
+dashkaBtnEl.addEventListener('click', () => {
+    dashkaDialogueEl.classList.remove('show');
+    dashkaStep = 1;
+    inputBlocked = true;
+    startSudoku();
+});
 
-    function stopSudoku() {
-        sudokuRunning = false;
-        sudokuCanvas.removeEventListener('click', sudokuCanvasClick);
-        sudokuContainer.classList.remove('show');
-    }
+dashkaWinBtnEl.addEventListener('click', () => {
+    dashkaWinDialogueEl.classList.remove('show');
 
-    dashkaBtnEl.addEventListener('click', () => { dashkaDialogueEl.classList.remove('show'); dashkaStep = 1; inputBlocked = true; startSudoku(); });
-    dashkaWinBtnEl.addEventListener('click', () => { dashkaWinDialogueEl.classList.remove('show'); });
+    // Если это был финальный диалог (после победы)
+    if (dashkaWinBtnEl.textContent === 'Уйти 🎉') {
+        // Показываем финальный экран
+        fullscreenMsgEl.querySelector('p').innerHTML = `
+            🎉🎂 С ДНЁМ РОЖДЕНИЯ, АЛЁНКА! 🎂🎉<br><br>
+            <small>Спасибо за игру!<br>
+            Ты покормила Роксану и Шлёпокрысу,<br>
+            встретилась с Мишей,<br>
+            помогла Варе и Соньке,<br>
+            и решила судоку с Дашкой!<br><br>
+            💖 Ты лучшая! 💖</small><br><br>
+
+        `;
+        fullscreenMsgEl.classList.add('show');
+
+        // Восстанавливаем текст кнопки для реиграбельности
+        document.getElementById('dashkaWinText').textContent = 'Ура! Спасибо, Алёнка! Ты просто гений! 🎉🧩';
+        dashkaWinBtnEl.textContent = 'Дальше ➜';
+    } else {
+        // Обычный рестарт после проигрыша
+        document.getElementById('dashkaWinText').textContent = 'Ура! Спасибо, Алёнка! Ты просто гений! 🎉🧩';
+        dashkaWinBtnEl.textContent = 'Дальше ➜';
+        startSudoku();
+    }
+});
 
     // ─── УТИЛИТЫ ────────────────────────────────────────────────────
     function hit(a,b){return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;}
@@ -1122,11 +1247,28 @@
     function updateDialogueL6(){if(inputBlocked||memoryGameContainer.classList.contains('show'))return;if(sonkaStep===2&&sonkaWinDialogueEl.classList.contains('show'))return;if(sonkaStep===0){if(hit(player,zoneSonka)){dialogueEl.textContent='💬 Подойти к Соньке (ENTER)';dialogueEl.classList.add('show');currentDialogue='sonka';}else{dialogueEl.classList.remove('show');currentDialogue=null;}}}
     function updateDialogueL7(){if(inputBlocked)return;if(hit(player,zoneDashkaL7)&&dashkaStep===0){dialogueEl.textContent='💬 Подойти к Дашке (ENTER)';dialogueEl.classList.add('show');currentDialogue='dashka';}else if(!hit(player,zoneDashkaL7)){if(currentDialogue==='dashka'){dialogueEl.classList.remove('show');currentDialogue=null;}}}
 
-    // ─── ВВОД ────────────────────────────────────────────────────────
+// ─── ВВОД ────────────────────────────────────────────────────────
+// ─── ВВОД ────────────────────────────────────────────────────────
     document.addEventListener('keydown', e => {
         keys[e.key] = true;
 
-        if (e.key >= '1' && e.key <= '7') {
+        if (sudokuRunning && handleSudokuKey(e.key)) {
+    e.preventDefault();
+    return;
+}
+
+// Пропуск судоку по клавише P
+    if (sudokuRunning && (e.key === 'p' || e.key === 'P' || e.key === 'з' || e.key === 'З')) {
+        e.preventDefault();
+        stopSudoku();
+        document.getElementById('dashkaWinText').textContent = 'С днём рождения, Алёнка! 🎉🎂 Давайте уйдём с истории в честь праздника!';
+        dashkaWinBtnEl.textContent = 'Уйти 🎉';
+        dashkaWinDialogueEl.classList.add('show');
+        return;
+    }
+
+        // Смена уровней (только если НЕ судоку)
+        if (e.key >= '1' && e.key <= '7' && !sudokuRunning) {
             const lvl = parseInt(e.key);
             if (lvl === 5) return;
             resetAllStates();
@@ -1139,27 +1281,45 @@
             levelLabelEl.textContent = lvl===1?'🏠 Уровень 1':lvl===2?'🌆 Уровень 2':lvl===3?'🌅 Уровень 3':lvl===4?'🏫 Уровень 4':lvl===6?'🏫 Уровень 6':lvl===7?'🏫 Уровень 7':'';
             return;
         }
-        if (e.key==='Escape') { if (fullscreenMsgEl.classList.contains('show')) fullscreenMsgEl.classList.remove('show'); return; }
 
-        // Ввод цифр для судоку
-        if (sudokuRunning && sudokuSelected && e.key >= '1' && e.key <= '9') {
-            const num = parseInt(e.key); const {r, c} = sudokuSelected;
-            if (sudokuBoard[r][c] === 0) { sudokuBoard[r][c] = num; sudokuSelected = null; drawSudoku(); checkSudokuWin(); }
+        if (e.key==='Escape') {
+            if (fullscreenMsgEl.classList.contains('show')) {
+                fullscreenMsgEl.classList.remove('show');
+                inputBlocked = false;
+            }
             return;
-        }
-        if (sudokuRunning && sudokuSelected && (e.key === 'Backspace' || e.key === 'Delete')) {
-            const {r, c} = sudokuSelected; sudokuBoard[r][c] = 0; drawSudoku(); return;
         }
 
         if (e.key==='Enter') {
-            if (bsRunning && bsGamestate === bsGamestates.won) { stopBubbleShooter(); doTransition(() => { currentLevel = 4; levelLabelEl.textContent = '🏫 Уровень 4'; player.x = 50; player.y = 450; varyaStep = 0; }); return; }
-            if (mishaStep===6 && pizzaFullscreenEl.classList.contains('show')) { mishaEnterPressed(); return; }
+            if (bsRunning && bsGamestate === bsGamestates.won) {
+                stopBubbleShooter();
+                doTransition(() => {
+                    currentLevel = 4;
+                    levelLabelEl.textContent = '🏫 Уровень 4';
+                    player.x = 50; player.y = 450;
+                    varyaStep = 0;
+                });
+                return;
+            }
+            if (mishaStep===6 && pizzaFullscreenEl.classList.contains('show')) {
+                mishaEnterPressed();
+                return;
+            }
             if (inputBlocked) return;
             if (currentLevel===1) {
                 if (currentDialogue==='cat' && !tasksCompleted.cat) animateCatFeed();
                 else if (currentDialogue==='chinchilla' && !tasksCompleted.chinchilla) animateChinchillaFeed();
-                else if (currentDialogue==='computer' && !tasksCompleted.computer) { fullscreenMsgEl.classList.add('show'); tasksCompleted.computer = true; }
-                else if (currentDialogue==='door' && tasksCompleted.cat && tasksCompleted.chinchilla) { doTransition(()=>{ currentLevel=2; levelLabelEl.textContent='🌆 Уровень 2'; player.x=50; player.y=450; }); }
+                else if (currentDialogue==='computer' && !tasksCompleted.computer) {
+                    fullscreenMsgEl.classList.add('show');
+                    tasksCompleted.computer = true;
+                }
+                else if (currentDialogue==='door' && tasksCompleted.cat && tasksCompleted.chinchilla) {
+                    doTransition(()=>{
+                        currentLevel=2;
+                        levelLabelEl.textContent='🌆 Уровень 2';
+                        player.x=50; player.y=450;
+                    });
+                }
             } else if (currentLevel===2) {
                 if (mishaStep===0 && currentDialogue==='misha') mishaInteract();
                 else if (mishaStep===1 || mishaStep===3) mishaEnterPressed();
@@ -1169,9 +1329,15 @@
                 if (currentDialogue==='varya' && varyaStep===0) varyaInteract();
                 else if (varyaStep===1) showNextVaryaBubble();
             } else if (currentLevel===6) {
-                if (currentDialogue==='sonka' && sonkaStep===0) { sonkaDialogueEl.classList.add('show'); dialogueEl.classList.remove('show'); }
+                if (currentDialogue==='sonka' && sonkaStep===0) {
+                    sonkaDialogueEl.classList.add('show');
+                    dialogueEl.classList.remove('show');
+                }
             } else if (currentLevel===7) {
-                if (currentDialogue==='dashka' && dashkaStep===0) { dashkaDialogueEl.classList.add('show'); dialogueEl.classList.remove('show'); }
+                if (currentDialogue==='dashka' && dashkaStep===0) {
+                    dashkaDialogueEl.classList.add('show');
+                    dialogueEl.classList.remove('show');
+                }
             }
         }
     });
